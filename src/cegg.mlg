@@ -1,0 +1,13 @@
+DECLARE PLUGIN "coq-egg-tactic.cegg"
+
+{
+
+open Pp
+open Ltac_plugin
+open Stdarg
+
+}
+
+VERNAC COMMAND EXTEND SolveWithEgg CLASSIFIED AS QUERY
+| [ "Solve" "With" "Egg" ] -> { () }
+END

@@ -1,0 +1,6 @@
+(library
+ (name rel-via-egg-plugin)
+ (public_name coq-egg-tactic.cegg)
+ (libraries coq-core.plugins.ltac))
+
+(coq.pp (modules cegg))

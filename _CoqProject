@@ -1,0 +1,11 @@
+src/META.coq-egg-tactic
+-R theories/ cegg
+-I src
+
+theories/Loader.v
+theories/Demo.v
+
+src/main_logic.ml
+src/main_logic.mli
+src/cegg.mlg
+src/cegg_plugin.mlpack
