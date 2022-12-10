@@ -1,5 +1,5 @@
 src/META.coq-egg-tactic
--R theories/ cegg
+-R theories/ Cegg
 -I src
 
 theories/Loader.v

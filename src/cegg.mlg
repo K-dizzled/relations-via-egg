@@ -2,9 +2,9 @@ DECLARE PLUGIN "coq-egg-tactic.cegg"
 
 {
 
-open Pp
+(* open Pp
 open Ltac_plugin
-open Stdarg
+open Stdarg *)
 
 }
 

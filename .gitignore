@@ -1,0 +1,17 @@
+.merlin
+Makefile.*
+.Makefile.*
+
+theories/.*
+theories/*.glob 
+theories/*.vo
+theories/*.vok
+theories/*.vos
+
+src/*.a
+src/*.cmi 
+src/*.cmx 
+src/*.cmxa 
+src/*.cmxs
+src/*.o
+src/*.d
