@@ -2,12 +2,21 @@ DECLARE PLUGIN "coq-egg-tactic.cegg"
 
 {
 
-(* open Pp
+open Pp
 open Ltac_plugin
-open Stdarg *)
+open Main_logic
 
 }
 
-VERNAC COMMAND EXTEND SolveWithEgg CLASSIFIED AS QUERY
-| [ "Solve" "With" "Egg" ] -> { () }
+(* VERNAC COMMAND EXTEND HelloWorld CLASSIFIED AS QUERY
+| [ "HelloWorld" ] -> { Feedback.msg_notice (strbrk Main_logic.message) }
+END *)
+
+TACTIC EXTEND cegg_solve
+| [ "Cegg" "solve" ] ->
+  { 
+    let _ = Proofview.Goal.goal in
+    let _ = Feedback.msg_notice (str message) in
+    Tacticals.tclIDTAC 
+  }
 END
