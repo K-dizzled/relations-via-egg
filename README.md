@@ -1,13 +1,13 @@
 # Installation: 
 Configure the opam environment:
 ```console
-opam create switch 4.14.0 
-opam switch 4.14.0
-eval $(opam env --switch=4.14.0)
+opam switch create 4.14.0 
+eval $(opam env)
 ```
 
 Setup dependencies:
 ```console
+opam install coq=8.16.0
 opam install merlin
 opam install tuareg
 ```

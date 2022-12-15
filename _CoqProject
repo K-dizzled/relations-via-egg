@@ -7,5 +7,7 @@ theories/Demo.v
 
 src/main_logic.ml
 src/main_logic.mli
+src/utils.ml
+src/utils.mli
 src/cegg.mlg
 src/cegg_plugin.mlpack
