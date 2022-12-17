@@ -1,6 +1,23 @@
+ (rule
+ (targets librust_egg.a dllrust_egg.so)
+ (deps (source_tree .))
+ (action
+  (no-infer
+   (progn
+    (run cargo build --manifest-path rust-egg/Cargo.toml)
+    (run sh -c
+      "cp rust-egg/target/debug/librust_egg.so ./dllrust_egg.so 2> /dev/null || \
+       cp rust-egg/target/debug/librust_egg.dylib ./dllrust_egg.so")
+    (run cp rust-egg/target/debug/librust_egg.a ./librust_egg.a)
+   ))))
+
 (library
- (name cegg_plugin)
- (public_name coq-egg-tactic.cegg)
- (libraries coq-core.plugins.ltac))
+ (name cegg_plugin) 
+ (public_name coq-via-egg-plugin.plugin)
+ (synopsis "My Coq plugin")
+
+ (flags :standard -rectypes -w -27)
+ (foreign_archives rust_egg)
+ (libraries coq-core.vernac coq-core.plugins.ltac))
 
 (coq.pp (modules cegg))

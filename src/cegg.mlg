@@ -1,4 +1,4 @@
-DECLARE PLUGIN "coq-egg-tactic.cegg"
+DECLARE PLUGIN "coq-via-egg-plugin.plugin"
 
 {
 
@@ -6,6 +6,7 @@ open Pp
 open Ltac_plugin
 (* open Utils *)
 (* open Printer *)
+open Main_logic
 
 }
 
@@ -22,8 +23,11 @@ TACTIC EXTEND cegg_solve
         let constr = EConstr.to_constr sigma concl in
         let pp_goal = Printer.pr_constr_env env sigma constr in
         let goal_str = Pp.string_of_ppcmds pp_goal in
+
+        let kek = (Rust.twice 10) in 
+        let kek_str = string_of_int kek in
         
-        let _ = Feedback.msg_notice (str "Goal: " ++ str goal_str) in
+        let _ = Feedback.msg_notice (str "Goal: " ++ str goal_str ++ str kek_str) in
         Tacticals.tclIDTAC
       ))
   }

@@ -1,4 +1,4 @@
-From Cegg Require Import Loader.
+Require Import Loader.
 From hahn Require Import Hahn.
 
 Section Example.

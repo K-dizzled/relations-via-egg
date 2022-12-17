@@ -1,1 +1,1 @@
-Declare ML Module "coq-egg-tactic.cegg".
+Declare ML Module "cegg_plugin:coq-via-egg-plugin.plugin".

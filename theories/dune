@@ -1,0 +1,4 @@
+(coq.theory
+ (name CeggPlugin)
+ (package coq-via-egg-plugin)
+ (plugins coq-via-egg-plugin.plugin))

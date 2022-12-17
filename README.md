@@ -1,3 +1,19 @@
+# Pre-setup Cargo (only for Mac)
+Add the following to your `~/.cargo/config` (create one if you don't have such file):
+```console 
+[target.x86_64-apple-darwin]
+rustflags = [
+  "-C", "link-arg=-undefined",
+  "-C", "link-arg=dynamic_lookup",
+]
+
+[target.aarch64-apple-darwin]
+rustflags = [
+  "-C", "link-arg=-undefined",
+  "-C", "link-arg=dynamic_lookup",
+]
+```
+
 # Installation: 
 Configure the opam environment:
 ```console
@@ -10,6 +26,7 @@ Setup dependencies:
 opam install coq=8.16.0
 opam install merlin
 opam install tuareg
+opam install dune
 ```
 
 Setup hahn library:
@@ -27,7 +44,6 @@ eval $(opam env)
 
 Build the project:
 ```console
-make .merlin
-make
+dune build
 ```
 
