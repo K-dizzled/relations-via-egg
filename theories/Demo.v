@@ -15,7 +15,7 @@ Proof.
 Qed.
 
 Lemma aaa_egg (r : relation A) :
-  (r^* ;; r^?) ;; r^? ⊆ r^*.
+  (r^* ;; r^?) ;; r^? = r^*.
 Proof.
   Cegg solve.  
 Abort.
