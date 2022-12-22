@@ -23,15 +23,7 @@ TACTIC EXTEND cegg_solve
         let a, b = try Parse_goal.split_goal expr with 
         Parse_goal.Goal_parse_exp msg -> CErrors.user_err (str msg) in
 
-        let _ = Feedback.msg_notice (str (Parse_goal.s_expr_to_string a)) in
-        let constr = EConstr.to_constr sigma concl in
-        let pp_goal = Printer.pr_constr_env env sigma constr in
-        let goal_str = Pp.string_of_ppcmds pp_goal in
-
-        let kek = (Rust.twice 10) in 
-        let kek_str = string_of_int kek in
-        
-        let _ = Feedback.msg_notice (str "Goal: " ++ str goal_str ++ str kek_str) in
+        let _ = Feedback.msg_notice (str "a from goal: " ++ str (Rust.simplify_expr a)) in
         Tacticals.tclIDTAC
       ))
   }

@@ -1,10 +1,26 @@
-use ocaml_interop::{
-    ocaml_export, OCaml, OCamlInt, OCamlRef, 
-};
+use std::collections::LinkedList;
 
-ocaml_export! {
-    fn rust_twice(cr, num: OCamlRef<OCamlInt>) -> OCaml<OCamlInt> {
-        let num: i64 = num.to_rust(cr);
-        unsafe { OCaml::of_i64_unchecked(num * 2) }
+#[derive(ocaml::FromValue)]
+enum GoalSExpr {
+    Symbol(String),
+    Application(String, LinkedList<GoalSExpr>),
+}
+
+#[ocaml::func]
+pub fn rust_simplify_expr(expr: GoalSExpr) -> String {
+    rust_expr_to_string(expr)
+}
+
+fn rust_expr_to_string(expr: GoalSExpr) -> String {
+    match expr {
+        GoalSExpr::Symbol(s) => s,
+        GoalSExpr::Application(s, args) => {
+            let mut args_str = String::new();
+            for arg in args {
+                args_str.push_str(&rust_expr_to_string(arg));
+                args_str.push(' ');
+            }
+            format!("({}: {})", s, args_str)
+        }
     }
 }

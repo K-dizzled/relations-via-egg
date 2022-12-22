@@ -1,3 +1,3 @@
 module Rust : sig
-    val twice : int -> int
+    val simplify_expr : Parse_goal.goal_s_expr -> string
 end

@@ -1,3 +1,3 @@
 module Rust = struct
-  external twice : int -> int = "rust_twice"
+  external simplify_expr : Parse_goal.goal_s_expr -> string = "rust_simplify_expr"
 end
