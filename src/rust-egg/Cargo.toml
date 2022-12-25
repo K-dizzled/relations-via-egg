@@ -8,3 +8,4 @@ crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
 ocaml = "0.22.4"
+egg = "0.9.1"
