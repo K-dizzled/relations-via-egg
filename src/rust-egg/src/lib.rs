@@ -90,8 +90,8 @@ fn make_rules() -> Vec<Rewrite<RelLanguage, ()>> {
     rules.extend(
         vec![
             rewrite!("seqA"    ; "(;; ?a (;; ?b ?c))" => "(;; (;; ?a ?b) ?c)"),
-            rewrite!("rt_end"  ; "(;; (* ?a) (? ?a))" => "(* ?a)"),
-            rewrite!("rt_begin"; "(;; (? ?a) (* ?a))" => "(* ?a)"),
+            rewrite!("rt_cr"  ; "(;; (* ?a) (? ?a))" => "(* ?a)"),
+            //rewrite!("rt_begin"; "(;; (? ?a) (* ?a))" => "(* ?a)"),
 
             rewrite!("seq_id_l"   ; "(;; top ?a)" => "?a"),
             rewrite!("seq_id_r"   ; "(;; ?a top)" => "?a"),
@@ -122,3 +122,20 @@ fn simplify(expr: &RecExpr<RelLanguage>) -> String {
     best.to_string()
 }
 
+#[ocaml::func]
+pub fn rust_prove_eq(expr1: GoalSExpr, expr2: GoalSExpr) -> String {
+    let rl1 = expr_to_rellang(&expr1).unwrap();
+    let rl2 = expr_to_rellang(&expr2).unwrap();
+
+    let mut runner = Runner::default()
+        .with_explanations_enabled()
+        .with_expr(&rl1)
+        .run(&make_rules());
+
+    let explanation = runner.explain_equivalence(&rl1, &rl2)
+                            .get_flat_string();
+
+    println!("{}", explanation);
+
+    explanation
+}
