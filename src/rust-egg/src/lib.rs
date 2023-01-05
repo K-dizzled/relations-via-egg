@@ -9,7 +9,7 @@ enum GoalSExpr {
 }
 
 #[ocaml::func]
-pub fn rust_simplify_expr(expr: GoalSExpr) -> String {
+pub fn rust_simplify_expr(expr: GoalSExpr) -> ProofSeq {
     let rl = expr_to_rellang(&expr).unwrap();
     simplify(&rl)
 }
@@ -105,21 +105,88 @@ fn make_rules() -> Vec<Rewrite<RelLanguage, ()>> {
     rules
 }
 
-/// parse an expression, simplify it using egg, and pretty print it back out
-fn simplify(expr: &RecExpr<RelLanguage>) -> String {
-    // simplify the expression using a Runner, which creates an e-graph with
-    // the given expression and runs the given rules over it
-    let runner = Runner::default().with_expr(&expr)
+fn simplify(expr: &RecExpr<RelLanguage>) -> ProofSeq {
+    let mut runner = Runner::default()
+        .with_explanations_enabled()
+        .with_expr(&expr)
         .run(&make_rules());
 
-    // the Runner knows which e-class the expression given with `with_expr` is in
     let root = runner.roots[0];
 
-    // use an Extractor to pick the best element of the root eclass
     let extractor = Extractor::new(&runner.egraph, AstSize);
     let (best_cost, best) = extractor.find_best(root);
+
     println!("Simplified {} to {} with cost {}", expr, best, best_cost);
-    best.to_string()
+    
+    let mut explanation = runner.explain_equivalence(&expr, &best);
+    let proof = parse_proof(&mut explanation);
+
+    ProofSeq::from(proof)
+}
+
+#[derive(Debug, ocaml::IntoValue)]
+pub enum Direction {
+    Forward,
+    Backward,
+}
+
+#[derive(Debug, ocaml::IntoValue)]
+pub struct Rule {
+    direction: Direction,
+    theorem: String,
+}
+
+#[derive(Debug, ocaml::IntoValue)]
+pub struct ProofSeq {
+    rules: LinkedList<Rule>,
+}
+
+impl ProofSeq {
+    fn from(rules: LinkedList<Rule>) -> ProofSeq {
+        ProofSeq {
+            rules,
+        }
+    }
+}
+
+fn parse_proof<L>(expl: &mut Explanation<L>) -> LinkedList<Rule> where 
+    L: Language, 
+    L: std::fmt::Display,
+    L: egg::FromOp,
+{
+    expl.make_flat_explanation()
+        .iter()
+        .map(|ft| ft_to_rule(ft))
+        .filter(|rule| rule.is_some())
+        .map(|rule| rule.unwrap())
+        .collect()
+}
+
+fn ft_to_rule<L>(ft: &FlatTerm<L>) -> Option<Rule> where 
+    L: Language, 
+    L: std::fmt::Display,
+    L: egg::FromOp,
+{
+    if let Some(rule_name) = &ft.backward_rule {
+        return Some(Rule {
+            direction: Direction::Backward,
+            theorem: (*rule_name).to_string(),
+        });
+    }
+    if let Some(rule_name) = &ft.forward_rule {
+        return Some(Rule {
+            direction: Direction::Forward,
+            theorem: (*rule_name).to_string(),
+        });
+    }
+
+    for child in &ft.children {
+        if let Some(rule) = ft_to_rule(child) {
+            return Some(rule);
+        }
+    }
+
+    None
 }
 
 #[ocaml::func]

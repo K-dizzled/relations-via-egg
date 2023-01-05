@@ -4,6 +4,24 @@ type goal_s_expr =
   | Symbol of string
   | Application of string * goal_s_expr list
 
+type direction = 
+  | Forward
+  | Backward
+
+type rule = 
+  { direction : direction;
+    theorem : string; }
+
+let rule_to_string rule = 
+  let dir = 
+    match rule.direction with
+    | Forward -> "forward"
+    | Backward -> "backward"
+  in
+  "(" ^ dir ^ " " ^ rule.theorem ^ ")"
+
+type proof_seq = { seq : rule list; } [@@boxed]
+
 let term_to_str env trm sigma =
   let constr = EConstr.to_constr sigma trm in
   let pp_goal = Printer.pr_constr_env env sigma constr in
