@@ -23,21 +23,8 @@ TACTIC EXTEND cegg_solve
         let a, b = try Parse_goal.split_goal expr with 
         Parse_goal.Goal_parse_exp msg -> CErrors.user_err (str msg) in
         let proof_seq = Rust.simplify_expr a in
-        (* run rewrite tactic for every element of the list 
-        let proof_seq = List.fold_left (fun tac rule -> 
-          let rule = Parse_goal.rule_to_string rule in
-          let tac = Tacticals.tclTHEN tac (Tactics.rewrite (Locus.AllOccurrences, Locus.InHyp, Some (Locus.ArgArg (Locus.ArgVar (Id.of_string rule))))) in
-          tac
-        ) (Tacticals.tclIDTAC) proof_seq.seq in
-        (* run the tactic  *)
-        let proof_seq = Proofview.tclTHEN proof_seq (Tactics.reflexivity ()) in
-
-        proof_seq
-      )) *)
-        (* debug  *)
         let proof_seq = List.map Parse_goal.rule_to_string proof_seq.seq in
         let proof_seq = String.concat " " proof_seq in
-
 
         let _ = Feedback.msg_notice (str "simplified: " ++ str proof_seq) in
         Tacticals.tclIDTAC
