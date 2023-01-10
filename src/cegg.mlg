@@ -22,7 +22,9 @@ TACTIC EXTEND cegg_solve
         Parse_goal.Goal_parse_exp msg -> CErrors.user_err (str msg) in
         let a, b = try Parse_goal.split_goal expr with 
         Parse_goal.Goal_parse_exp msg -> CErrors.user_err (str msg) in
+
         let proof_seq = Rust.simplify_expr a in
+        
         let proof_seq = List.map Parse_goal.rule_to_string proof_seq.seq in
         let proof_seq = String.concat " " proof_seq in
 
