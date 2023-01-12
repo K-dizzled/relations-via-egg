@@ -14,14 +14,32 @@ Proof.
   reflexivity.
 Qed.
 
-Lemma aaa_egg (r : relation A) :
+Lemma t1_egg (r : relation A) :
   (r^* ;; r^?) ;; r^? ⊆ r^*.
 Proof.
   Cegg solve.
-  kek.
+  reflexivity.
   (* my_print govno. *)
   (* my_print rt_cr. *)
-Abort.
+Qed.
+
+Lemma t2_egg (r : relation A) :
+  r^* ;; r^? ⊆ r^*.
+Proof.
+  Cegg solve.
+  reflexivity.
+  (* my_print govno. *)
+  (* my_print rt_cr. *)
+Qed.
+
+Lemma t3_egg (r : relation A) :
+  ((r^* ;; r^?) ;; r^?) ;; r^? ⊆ r^*.
+Proof.
+  Cegg solve.
+  reflexivity.
+  (* my_print govno. *)
+  (* my_print rt_cr. *)
+Qed.
 
 End Example.
 

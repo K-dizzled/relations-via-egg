@@ -1,89 +1,10 @@
 DECLARE PLUGIN "coq-via-egg-plugin.plugin"
 
 {
-
-open Pp
-open Ltac_plugin
-open Rust_api
-(* open Stdarg *)
-
+  open Solver
+  open Ltac_plugin
 }
 
 TACTIC EXTEND cegg_solve
-| [ "Cegg" "solve" ] ->
-  { 
-    Proofview.tclBIND (Proofview.Goal.goals) (fun goals -> 
-      let goal = List.hd goals in
-      Proofview.tclBIND (goal) (fun goal -> 
-        let env = Proofview.Goal.env goal in
-        let sigma = Proofview.Goal.sigma goal in
-        let concl = Proofview.Goal.concl goal in
-
-        let expr = try Parse_goal.goal_to_s env concl sigma with 
-        Parse_goal.Goal_parse_exp msg -> CErrors.user_err (str msg) in
-        let a, b = try Parse_goal.split_goal expr with 
-        Parse_goal.Goal_parse_exp msg -> CErrors.user_err (str msg) in
-
-        let _proof_seq = Rust.simplify_expr a in
-
-        (* iterate proof_seq and apply rewrite with each theorem *)
-        (* let proof_seq = proof_seq.seq in 
-        let rec iter proof_seq = match proof_seq with
-        | [] -> Proofview.tclUNIT ()
-        | hd::tl -> 
-          let thr = hd.theorem in 
-          let dir = hd.direction in 
-          let tac = try Aac_rewrite.rewrite thr dir with
-          Aac_rewrite.Rewriting_exp msg -> CErrors.user_err (str msg) in
-          let tac = Proofview.tclTHEN tac (Proofview.tclUNIT ()) in
-          let tac = Proofview.tclTHEN tac (iter tl) in
-          tac
-        in
-
-        iter proof_seq *)
-
-        (* let s = List.fold_left (fun str (rule : Parse_goal.rule) -> 
-          let s = Parse_goal.rule_to_string rule in
-          str ^ s ^ rule.theorem
-        ) "" proof_seq.seq in
-        Feedback.msg_notice (str s); *)
-
-        let tac = try Aac_rewrite.rewrite "rt_cr" Parse_goal.Forward with
-        Aac_rewrite.Rewriting_exp msg -> CErrors.user_err (str msg) in
-        let tac = Proofview.tclTHEN tac (Proofview.tclUNIT ()) in
-        let tac1 = try Aac_rewrite.rewrite "rt_cr" Parse_goal.Forward with
-        Aac_rewrite.Rewriting_exp msg -> CErrors.user_err (str msg) in
-
-        let tac = Proofview.tclTHEN tac (Proofview.tclUNIT ()) in
-        let tac = Proofview.tclTHEN tac tac1 in
-
-        tac
-        
-
-        (* let proof_seq = List.fold_left (fun tac (rule : Parse_goal.rule) -> 
-          let thr = rule.theorem in 
-          let dir = rule.direction in 
-          let rewrite_tac = try Aac_rewrite.rewrite thr dir with
-          Aac_rewrite.Rewriting_exp msg -> CErrors.user_err (str msg) in
-          let rewrite_tac = Proofview.tclTHEN rewrite_tac (Proofview.tclUNIT ()) in
-          let tac = Proofview.tclTHEN tac rewrite_tac in
-          tac
-        ) (Tacticals.tclIDTAC) proof_seq.seq in
-        
-        proof_seq *)
-      ))
-  }
-END
-
-TACTIC EXTEND kek
-| [ "kek" ] ->
-  { 
-    Proofview.Goal.enter (fun goal -> 
-      let tac = try Aac_rewrite.rewrite "rt_cr" Parse_goal.Forward with
-      Aac_rewrite.Rewriting_exp msg -> CErrors.user_err (str msg) in
-      let tac = Proofview.tclTHEN tac (Proofview.tclUNIT ()) in
-
-      tac
-    )
-   }
+| [ "Cegg" "solve" ] -> { simplify_lhs () }
 END
