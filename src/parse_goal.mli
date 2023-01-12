@@ -23,7 +23,7 @@ val term_to_str :
   evar_map ->
   string
 
-val goal_to_s : 
+val goal_to_sexp : 
   env -> 
   EConstr.t -> 
   evar_map -> 

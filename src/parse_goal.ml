@@ -22,7 +22,7 @@ let term_to_str env trm sigma =
 (* Parse goal represented as a Ecostr to
    an s expression. Assumes that the term 
    contains only Applications and Variables *)
-let rec goal_to_s env trm sigma = 
+let rec goal_to_sexp env trm sigma = 
   match EConstr.kind sigma trm with
   | App (f, args) -> 
     let f_name = term_to_str env f sigma in
@@ -31,11 +31,11 @@ let rec goal_to_s env trm sigma =
     let args = Array.sub args 1 (Array.length args - 1) in
     let args_repr = 
       Array.to_list args
-      |> List.map (fun arg -> goal_to_s env arg sigma)
+      |> List.map (fun arg -> goal_to_sexp env arg sigma)
     in
     Application (f_name, args_repr)
   | Var n -> Symbol (Names.Id.to_string n)
-  | _ -> raise (Goal_parse_exp "Invalid goal term.") 
+  | _ -> raise (Goal_parse_exp "Conclusion of the goal must be an application.") 
 
 (* Split the statement into a pair of lhs and rhs,
    throw Goal_parse_exp if the amount of 
@@ -44,10 +44,13 @@ let split_goal expr =
   match expr with
   | Application (f, args) -> 
     if List.length args != 2 then
-      raise (Goal_parse_exp "Invalid goal term.")
+      raise (Goal_parse_exp "Must be a binary operator.")
     else
-      (List.nth args 0, List.nth args 1)
-  | _ -> raise (Goal_parse_exp "Invalid goal term.")
+      if f = "@inclusion" then 
+        (List.nth args 0, List.nth args 1)
+      else 
+        raise (Goal_parse_exp "Goal must be of form a ⊆ b.")
+  | _ -> raise (Goal_parse_exp "Invalid term passed.")
 
 (* Utility functions *)
 let rule_to_string rule = 
