@@ -18,28 +18,19 @@ Lemma t1_egg (r : relation A) :
   (r^* ;; r^?) ;; r^? ⊆ r^*.
 Proof.
   Cegg solve.
-  reflexivity.
-  (* my_print govno. *)
-  (* my_print rt_cr. *)
 Qed.
 
 Lemma t2_egg (r : relation A) :
   r^* ;; r^? ⊆ r^*.
 Proof.
   Cegg solve.
-  reflexivity.
-  (* my_print govno. *)
-  (* my_print rt_cr. *)
 Qed.
 
 Lemma t3_egg (r : relation A) :
-  ((r^* ;; r^?) ;; r^?) ;; r^? ⊆ r^*.
+  ((r^* ;; r^?) ;; r^?) ;; r^? ⊆ r^?.
 Proof.
   Cegg solve.
-  reflexivity.
-  (* my_print govno. *)
-  (* my_print rt_cr. *)
-Qed.
+Abort.
 
 End Example.
 
