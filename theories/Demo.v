@@ -18,6 +18,9 @@ Lemma aaa_egg (r : relation A) :
   (r^* ;; r^?) ;; r^? ⊆ r^*.
 Proof.
   Cegg solve.
+  kek.
+  (* my_print govno. *)
+  (* my_print rt_cr. *)
 Abort.
 
 End Example.
