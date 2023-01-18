@@ -6,6 +6,7 @@ exception Goal_parse_exp of string
 type goal_s_expr =
   | Symbol of string
   | Application of string * goal_s_expr list
+  | Lambda of goal_s_expr * goal_s_expr
 
 type direction = 
   | Forward
@@ -16,12 +17,6 @@ type rule =
     theorem : string; }
 
 type proof_seq = { seq : rule list; } [@@boxed]
-
-val term_to_str :
-  env ->
-  EConstr.t ->
-  evar_map ->
-  string
 
 val goal_to_sexp : 
   env -> 

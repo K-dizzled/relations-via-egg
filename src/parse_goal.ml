@@ -1,9 +1,12 @@
+open C_utilities
+
 exception Goal_parse_exp of string
 
 type goal_s_expr =
   | Symbol of string
   | Application of string * goal_s_expr list
-
+  | Lambda of goal_s_expr * goal_s_expr
+  
 type direction = 
   | Forward
   | Backward
@@ -13,11 +16,6 @@ type rule =
     theorem : string; }
 
 type proof_seq = { seq : rule list; } [@@boxed]
-
-let term_to_str env trm sigma =
-  let constr = EConstr.to_constr sigma trm in
-  let pp_goal = Printer.pr_constr_env env sigma constr in
-  Pp.string_of_ppcmds pp_goal
 
 (* Parse goal represented as a Ecostr to
    an s expression. Assumes that the term 
@@ -35,6 +33,13 @@ let rec goal_to_sexp env trm sigma =
     in
     Application (f_name, args_repr)
   | Var n -> Symbol (Names.Id.to_string n)
+  | Ind ((name, _), _) -> 
+    let name_s = Names.MutInd.to_string name in
+    Symbol name_s
+  | Lambda (_, t, body) -> 
+    let t_name = goal_to_sexp env t sigma in
+    let body_repr = goal_to_sexp env body sigma in
+    Lambda (t_name, body_repr)
   | _ -> raise (Goal_parse_exp "Conclusion of the goal must be an application.") 
 
 (* Split the statement into a pair of lhs and rhs,
@@ -70,3 +75,7 @@ let rec s_expr_to_string expr =
       |> String.concat " "
     in
     "(" ^ f ^ " " ^ args_repr ^ ")"
+  | Lambda (var, body) -> 
+    let var_str = s_expr_to_string var in
+    let body_str = s_expr_to_string body in
+    "(λ _: " ^ var_str ^ " => " ^ body_str ^ ")"

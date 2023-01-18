@@ -6,8 +6,10 @@ use crate::proof_sequence::*;
 #[ocaml::func]
 pub fn rust_simplify_expr(expr: GoalSExpr) -> Result<ProofSeq, ocaml::Error> {
     let rl = expr_to_rellang(&expr);
-    if rl.is_err() {
-        return Err(ocaml::Error::Message("Error parsing expr. Invalid operator used."));
+
+    if let Err(error) = rl {
+        let message = error.into();
+        return Err(ocaml::Error::Message(message));
     }
     
     Ok(get_simplification_proof(&rl.unwrap()))

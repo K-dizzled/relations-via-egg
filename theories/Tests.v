@@ -38,8 +38,26 @@ Proof.
   Cegg solve.
 Abort.
 
-Lemma invalid_syntax_b (r : relation A) :
+Lemma test_norm_2 (r : relation A) :
   (r^* ;; r^?) ;; (r ∪ r^*) ⊆ r^*.
+Proof.
+  Cegg solve.
+Abort.
+
+Lemma test_norm_3 (r : relation A) :
+  ⦗fun _ => True⦘ ;; r ⊆ r.
+Proof.
+  Cegg solve.
+Qed.
+
+Lemma test_norm_4 (r : relation A) :
+  (fun _ _ => False) ;; r ⊆ (fun _ _ => False).
+Proof.
+  Cegg solve.
+Qed.
+
+Lemma test_incorrect_lambda (r : relation A) :
+  (fun _ _ => True) ;; r ⊆ (fun _ _ => False).
 Proof.
   Fail Cegg solve.
 Abort.
