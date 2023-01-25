@@ -1,10 +1,10 @@
 opam-version: "2.0"
 maintainer: "kozyrev.andreiii2016@gmail.com"
 
-homepage: "https://github.com/your-github/my-plugin"
-dev-repo: "git+https://github.com/your-github/my-plugin.git"
-bug-reports: "https://github.com/your-github/my-plugin/issues"
-doc: "https://your-github.github.io/my-plugin"
+homepage: "https://github.com/K-dizzled/relations-via-egg"
+dev-repo: "git+https://github.com/K-dizzled/relations-via-egg.git"
+bug-reports: "https://github.com/K-dizzled/relations-via-egg/issues"
+doc: "https://github.com/K-dizzled/relations-via-egg"
 license: "MIT"
 
 synopsis: "COQ Plugin solving relations from Hahn coq lib using Rust EGG library"
@@ -15,7 +15,7 @@ build: ["dune" "build" "-p" name "-j" jobs]
 depends: [
   "ocaml" {>= "4.07.1"}
   "dune" {>= "3.5"}
-  "coq" {>= "8.16.0" & <= "8.16.0"}
+  "coq" {>= "8.16.0"}
 ]
 
 tags: [

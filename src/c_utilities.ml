@@ -3,7 +3,7 @@ let term_to_str env trm sigma =
   let pp_goal = Printer.pr_constr_env env sigma constr in
   Pp.string_of_ppcmds pp_goal
 
-let rec term_kind_to_str env trm sigma = 
+let term_kind_to_str env trm sigma = 
   match EConstr.kind sigma trm with
   | Rel _ -> "App"
   | Var _ -> "Var"
@@ -16,7 +16,7 @@ let rec term_kind_to_str env trm sigma =
     "Lambda with input type " ^ 
     (term_to_str env t sigma) ^ 
     " and body: " ^ 
-    (term_to_str env body sigma) ^ (term_kind_to_str env t sigma)
+    (term_to_str env body sigma)
   | LetIn _ -> "LetIn"
   | App _ -> "App"
   | Const _ -> "Const"

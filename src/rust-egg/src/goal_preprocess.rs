@@ -35,6 +35,7 @@ define_language! {
         "+" = CT(Id),
         "?" = RT(Id),
         "*" = CRT(Id),
+        "eqv_rel" = Eqv(Id),
 
         "||" = Union([Id; 2]),
         "&&" = Inter([Id; 2]),
@@ -56,6 +57,7 @@ lazy_static! {
         map.insert("union", "||");
         map.insert("minus_rel", "setminus");
         map.insert("inter_rel", "&&");
+        map.insert("eqv_rel", "eqv_rel");
         map
     };
 
@@ -120,7 +122,7 @@ pub fn expr_to_rellang(sexp: &GoalSExpr) -> Result<RecExpr<RelLanguage>, ExprPar
                     None => f.as_str(),
                 };
 
-                // Check if Top was passed (i. e. (fun _ => True))
+                // Check if Top was passed (i. e. eqv_rel (fun _ => True))
                 if is_application_top(op, args) {
                     return Ok(expr.add(RelLanguage::Top));
                 }

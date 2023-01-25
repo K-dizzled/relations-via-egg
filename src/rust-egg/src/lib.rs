@@ -26,7 +26,7 @@ fn make_rules() -> Vec<Rewrite<RelLanguage, ()>> {
 
     rules.extend(
         vec![
-            rewrite!("seqA"    ; "(;; ?a (;; ?b ?c))" => "(;; (;; ?a ?b) ?c)"),
+            // rewrite!("seqA"    ; "(;; (;; ?a ?b) ?c)" => "(;; (;; ?a ?b) ?c)"),
             rewrite!("rt_cr"  ; "(;; (* ?a) (? ?a))" => "(* ?a)"),
 
             rewrite!("seq_id_l"   ; "(;; top ?a)" => "?a"),

@@ -5,6 +5,12 @@ DECLARE PLUGIN "coq-via-egg-plugin.plugin"
   open Ltac_plugin
 }
 
+VERNAC COMMAND EXTEND cegg_config CLASSIFIED AS QUERY
+| [ "Cegg" "config" ] -> { 
+  Feedback.msg_notice (Pp.str "Cegg config");
+}
+END
+
 TACTIC EXTEND cegg_solve
 | [ "Cegg" "solve" ] -> { simplify_lhs () }
 END
