@@ -47,3 +47,8 @@ Build the project:
 dune build
 ```
 
+## To use from outside of the source folder: 
+```console
+dune build @install
+opam install coq-via-egg-plugin .
+```
