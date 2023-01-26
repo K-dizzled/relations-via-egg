@@ -70,7 +70,7 @@ Record Wf :=
   { 
     kek_in_lol : kek ⊆ lol ;
     lol_in_mem : lol ⊆ mem ;
-    mem_in_kek : mem ≡ kek ;; lol^* ;
+    mem_in_kek : mem ≡ kek ;; lol^*;
   }.
 
 Cegg config Wf.
@@ -85,10 +85,21 @@ Proof.
   apply WF.
 Qed.
 
+Lemma ccc WF (r : relation A) :
+  kek ;; lol^* ⊆ mem.
+Proof.
+  rewrite <- mem_in_kek.
+  reflexivity.
+  apply 
+  Cegg solve eq.  
+Qed.
+
 End Tests.
 
 (* 
                     Проблемы: 
     -- Проблемы с rewrite в нескольких местах
     -- Rewrite сработал не там где надо 
+    -- Првоерить rewite в обратную сторону
+    -- Если конфиг сломался
 *)

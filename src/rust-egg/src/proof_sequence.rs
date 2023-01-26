@@ -72,3 +72,4 @@ pub fn ft_to_rule<L>(ft: &FlatTerm<L>) -> Option<Rule> where
 
     None
 }
+// TODO: Check if rewrite <- is working correctly, it seems that the rule passed is called "_-rev".

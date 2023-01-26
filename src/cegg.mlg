@@ -13,3 +13,12 @@ END
 TACTIC EXTEND cegg_solve
 | [ "Cegg" "solve" ] -> { simplify_lhs () }
 END
+
+TACTIC EXTEND cegg_solve_eq
+| [ "Cegg" "solve" "eq" ] -> { 
+  (* let prod = Parse_record.access_record_body r in
+  Tactics.Simple.apply prod *)
+
+  Cegg_rewrite.apply "mem_in_kek"
+ }
+END

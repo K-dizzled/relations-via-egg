@@ -33,3 +33,7 @@ let rewrite (thr : string) (dir : Parse_goal.direction) =
     | Parse_goal.Backward -> false
   in
   general_rewrite constr l2r
+
+let apply (thr : string) = 
+  let constr = get_thr_econstr thr in
+  Tactics.Simple.apply constr

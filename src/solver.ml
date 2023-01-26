@@ -58,6 +58,27 @@ let simplify_lhs () =
     tac
   )
 
+let try_prove () = 
+  Proofview.Goal.enter (fun goal -> 
+    (* let lhs, rhs = extract_goal_eq_sides goal in
+    let proof_seq = 
+      try 
+        Rust.prove_eq lhs rhs
+      with err -> 
+        CErrors.user_err (str (Printexc.to_string err)) in
+
+    let tac = multiple_rewrites_tac proof_seq in 
+    
+    (* Apply reflexivity at the end if 
+        it succeeds, otherwise just simplify  *)
+    let tac_with_reflexivity = Proofview.tclTHEN tac (Tactics.reflexivity) in 
+    let tac = Proofview.tclOR tac_with_reflexivity (fun _ -> tac) in
+    let _ = if List.length proof_seq.seq = 0 then (warn "Could not achieve simplification.") in 
+
+    tac *)
+    Cegg_rewrite.apply "WF"
+  )
+
 let config_egg ref = 
   let env = Global.env () in
      let sigma = Evd.from_env env in

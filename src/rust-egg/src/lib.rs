@@ -12,8 +12,8 @@ use std::collections::LinkedList;
 pub fn rust_configure_egg(axioms: LinkedList<GoalSExpr>) -> Result<(), ocaml::Error> {    
     let ax = Axioms(axioms);
     let res = save_axioms("axioms.json", ax);
-    if let Err(error) = res {
-        return Err(ocaml::Error::Message("Unable to save Redord"));
+    if let Err(_error) = res {
+        return Err(ocaml::Error::Message("Unable to save Record"));
     }
 
     Ok(())
@@ -31,9 +31,37 @@ pub fn rust_simplify_expr(expr: GoalSExpr) -> Result<ProofSeq, ocaml::Error> {
     Ok(get_simplification_proof(&rl.unwrap()))
 }
 
+/// Generate proof of equivalence between two expressions.
+/// Build a E-graph for the lhs and then search it for
+/// the rhs.
+#[ocaml::func]
+pub fn rust_prove_eq(expr1: GoalSExpr, expr2: GoalSExpr) -> Result<ProofSeq, ocaml::Error> {
+    let rl1 = expr_to_rellang(&expr1);
+    let rl2 = expr_to_rellang(&expr2);
+
+    if rl1.is_err() || rl2.is_err() {
+        let message = ExprParseError::SexpParsingError.into();
+        return Err(ocaml::Error::Message(message));
+    }
+    let rl1 = rl1.unwrap(); let rl2 = rl2.unwrap();
+
+    let mut rules = make_rules();
+    extend_rules_w_axioms(&mut rules);
+    let mut runner = Runner::default()
+        .with_explanations_enabled()
+        .with_expr(&rl1)
+        .run(&rules);
+
+    let mut explanation = runner.explain_equivalence(&rl1, &rl2);
+    let proof = parse_proof(&mut explanation);
+
+    Ok(ProofSeq::from(proof))
+}
+
+type RelRules = Vec<Rewrite<RelLanguage, ()>>;
 /// Extract hahn COQ library theorems to rewrite
 /// rules and afterwards build graph using them
-fn make_rules() -> Vec<Rewrite<RelLanguage, ()>> {
+fn make_rules() -> RelRules {
     let mut rules =
         vec![ 
             rewrite!("ct_end"  ; "(+ ?a)" <=> "(;; (* ?a) ?a)"),
@@ -77,28 +105,6 @@ fn get_simplification_proof(expr: &RecExpr<RelLanguage>) -> ProofSeq {
     let proof = parse_proof(&mut explanation);
 
     ProofSeq::from(proof)
-}
-
-/// Generate proof of equivalence between two expressions.
-/// Build a E-graph for the lhs and then search it for
-/// the rhs. Unused for now.
-#[allow(dead_code)]
-#[ocaml::func]
-pub fn rust_prove_eq(expr1: GoalSExpr, expr2: GoalSExpr) -> String {
-    let rl1 = expr_to_rellang(&expr1).unwrap();
-    let rl2 = expr_to_rellang(&expr2).unwrap();
-
-    let mut runner = Runner::default()
-        .with_explanations_enabled()
-        .with_expr(&rl1)
-        .run(&make_rules());
-
-    let explanation = runner.explain_equivalence(&rl1, &rl2)
-                            .get_flat_string();
-
-    println!("{}", explanation);
-
-    explanation
 }
 
 pub mod goal_preprocess;

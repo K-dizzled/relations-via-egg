@@ -74,6 +74,8 @@ lazy_static! {
 pub enum ExprParseError {
     BadOp(FromOpError),
     UnexpectedLambdaUse,
+    WFParsingError,
+    SexpParsingError,
 }
 
 impl Into<&str> for ExprParseError {
@@ -81,6 +83,8 @@ impl Into<&str> for ExprParseError {
         match self {
             ExprParseError::BadOp(_) => "Error parsing expr. Invalid operator used.",
             ExprParseError::UnexpectedLambdaUse => "Lambda used in an unexpected place.",
+            ExprParseError::WFParsingError => "Error parsing wf.",
+            ExprParseError::SexpParsingError => "Error parsing s-expression.",
         }
     }
 }
