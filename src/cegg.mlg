@@ -3,12 +3,11 @@ DECLARE PLUGIN "coq-via-egg-plugin.plugin"
 {
   open Solver
   open Ltac_plugin
+  open Stdarg
 }
 
 VERNAC COMMAND EXTEND cegg_config CLASSIFIED AS QUERY
-| [ "Cegg" "config" ] -> { 
-  Feedback.msg_notice (Pp.str "Cegg config");
-}
+| [ "Cegg" "config" reference(r) ] -> { config_egg r }
 END
 
 TACTIC EXTEND cegg_solve

@@ -1,7 +1,23 @@
 use egg::*;
 
-use crate::goal_preprocess::*;
-use crate::proof_sequence::*;
+use crate::{
+    goal_preprocess::*,
+    proof_sequence::*,
+    axioms::*,
+};
+
+use std::collections::LinkedList;
+
+#[ocaml::func]
+pub fn rust_configure_egg(axioms: LinkedList<GoalSExpr>) -> Result<(), ocaml::Error> {    
+    let ax = Axioms(axioms);
+    let res = save_axioms("axioms.json", ax);
+    if let Err(error) = res {
+        return Err(ocaml::Error::Message("Unable to save Redord"));
+    }
+
+    Ok(())
+}
 
 #[ocaml::func]
 pub fn rust_simplify_expr(expr: GoalSExpr) -> Result<ProofSeq, ocaml::Error> {
@@ -87,3 +103,4 @@ pub fn rust_prove_eq(expr1: GoalSExpr, expr2: GoalSExpr) -> String {
 
 pub mod goal_preprocess;
 pub mod proof_sequence;
+pub mod axioms;

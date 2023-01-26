@@ -2,12 +2,14 @@ use egg::{RecExpr, Symbol, Id, FromOpError, define_language, FromOp};
 use std::collections::{LinkedList, HashMap};
 use crate::ExprParseError::BadOp;
 use lazy_static::lazy_static;
+use serde::{Serialize, Deserialize};
 use ocaml::Value;
 
 /// Goal is received from OCaml
 /// as a simple s-expression
 /// consisting of applications.
 #[derive(ocaml::FromValue)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub enum GoalSExpr {
     Symbol(String),
     Application(String, LinkedList<GoalSExpr>),
@@ -152,9 +154,9 @@ pub fn expr_to_rellang(sexp: &GoalSExpr) -> Result<RecExpr<RelLanguage>, ExprPar
 }
 
 #[allow(dead_code)]
-fn expr_to_string(expr: GoalSExpr) -> String {
+pub fn expr_to_string(expr: &GoalSExpr) -> String {
     match expr {
-        GoalSExpr::Symbol(s) => s,
+        GoalSExpr::Symbol(s) => s.to_string(),
         GoalSExpr::Application(s, args) => {
             let mut args_str = String::new();
             for arg in args {
@@ -164,7 +166,7 @@ fn expr_to_string(expr: GoalSExpr) -> String {
             format!("({}: {})", s, args_str)
         }
         GoalSExpr::Lambda(tp, body) => {
-            format!("(fun _ : {} => {})", expr_to_string(*tp), expr_to_string(*body))
+            format!("(fun _ : {} => {})", expr_to_string(tp.as_ref()), expr_to_string(body.as_ref()))
         }
     }
 }
