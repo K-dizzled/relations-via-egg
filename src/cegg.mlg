@@ -15,10 +15,5 @@ TACTIC EXTEND cegg_solve
 END
 
 TACTIC EXTEND cegg_solve_eq
-| [ "Cegg" "solve" "eq" ] -> { 
-  (* let prod = Parse_record.access_record_body r in
-  Tactics.Simple.apply prod *)
-
-  Cegg_rewrite.apply "mem_in_kek"
- }
+| [ "Cegg" "solve" "eq" ] -> { try_prove () }
 END

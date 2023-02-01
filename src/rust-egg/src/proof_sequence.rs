@@ -51,13 +51,16 @@ pub fn ft_to_rule<L>(ft: &FlatTerm<L>) -> Option<Rule> where
     L: std::fmt::Display,
     L: egg::FromOp,
 {
-    if let Some(rule_name) = &ft.backward_rule {
-        return Some(Rule {
-            direction: Direction::Backward,
-            theorem: (*rule_name).to_string(),
-        });
-    }
     if let Some(rule_name) = &ft.forward_rule {
+        let rule_name = (*rule_name).to_string();
+        if rule_name.ends_with("-rev") {
+            let rule_name_wo_dir = rule_name.split("-rev").next().unwrap();
+            return Some(Rule {
+                direction: Direction::Backward,
+                theorem: rule_name_wo_dir.to_string(),
+            });
+        }
+
         return Some(Rule {
             direction: Direction::Forward,
             theorem: (*rule_name).to_string(),
@@ -72,4 +75,3 @@ pub fn ft_to_rule<L>(ft: &FlatTerm<L>) -> Option<Rule> where
 
     None
 }
-// TODO: Check if rewrite <- is working correctly, it seems that the rule passed is called "_-rev".

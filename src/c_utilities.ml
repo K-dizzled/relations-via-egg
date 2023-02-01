@@ -11,8 +11,12 @@ let rec term_kind_to_str env trm sigma =
   | Evar _ -> "Evar"
   | Sort _ -> "Sort"
   | Cast _ -> "Cast"
-  | Prod (_, b, c) -> 
-    "Forall A : " ^
+  | Prod (a, b, c) -> 
+    let name = Context.binder_name a in 
+    let name = Pp.string_of_ppcmds (Names.Name.print name) in 
+    "Name: " ^ 
+    name ^
+    " -- forall A : " ^
     (term_to_str env b sigma) ^
     " , " ^
     (term_kind_to_str env c sigma)

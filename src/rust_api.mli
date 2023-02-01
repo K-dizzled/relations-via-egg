@@ -3,5 +3,5 @@ module Rust : sig
 
     val prove_eq : Parse_goal.goal_s_expr -> Parse_goal.goal_s_expr -> Parse_goal.proof_seq
 
-    val configure_egg : Parse_goal.goal_s_expr list -> unit
+    val configure_egg : (Parse_goal.goal_s_expr * string) list -> unit
 end

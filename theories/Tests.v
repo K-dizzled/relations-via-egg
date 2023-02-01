@@ -85,14 +85,23 @@ Proof.
   apply WF.
 Qed.
 
+Lemma test_dirs_in_rewrite_1 (r : relation A) : 
+  r^+ ⊆ r ;; r^*.
+Proof. 
+  Cegg solve eq.
+Qed.
+
+Lemma test_dirs_in_rewrite_2 (r : relation A) : 
+  r ;; r^* ⊆ r^+.
+Proof. 
+  Cegg solve eq.
+Qed.
+
 Lemma ccc WF (r : relation A) :
   kek ;; lol^* ⊆ mem.
 Proof.
-  rewrite <- mem_in_kek.
-  reflexivity.
-  apply 
-  Cegg solve eq.  
-Qed.
+  Cegg solve eq.
+Abort.
 
 End Tests.
 
@@ -100,6 +109,7 @@ End Tests.
                     Проблемы: 
     -- Проблемы с rewrite в нескольких местах
     -- Rewrite сработал не там где надо 
-    -- Првоерить rewite в обратную сторону
     -- Если конфиг сломался
+    -- Если лемма определена для конкретных отношений и не 
+    -- принимает (r : relation A)
 *)

@@ -60,23 +60,26 @@ let simplify_lhs () =
 
 let try_prove () = 
   Proofview.Goal.enter (fun goal -> 
-    (* let lhs, rhs = extract_goal_eq_sides goal in
-    let proof_seq = 
-      try 
-        Rust.prove_eq lhs rhs
-      with err -> 
-        CErrors.user_err (str (Printexc.to_string err)) in
+      let lhs, rhs = extract_goal_eq_sides goal in
+      let proof_seq = 
+        try 
+          Rust.prove_eq lhs rhs
+        with err -> 
+          CErrors.user_err (str (Printexc.to_string err)) in
 
-    let tac = multiple_rewrites_tac proof_seq in 
-    
-    (* Apply reflexivity at the end if 
-        it succeeds, otherwise just simplify  *)
-    let tac_with_reflexivity = Proofview.tclTHEN tac (Tactics.reflexivity) in 
-    let tac = Proofview.tclOR tac_with_reflexivity (fun _ -> tac) in
-    let _ = if List.length proof_seq.seq = 0 then (warn "Could not achieve simplification.") in 
+      let tac = multiple_rewrites_tac proof_seq in 
+      
+      (* Call auto to get rid of newly 
+         created "Wf" goal *)
+      let tac_with_auto = Proofview.tclTHEN tac (Auto.default_auto) in 
 
-    tac *)
-    Cegg_rewrite.apply "WF"
+      (* Apply reflexivity at the end if 
+          it succeeds, otherwise just simplify  *)
+      let tac_with_reflexivity = Proofview.tclTHEN tac_with_auto (Tactics.reflexivity) in 
+      let tac = Proofview.tclOR tac_with_reflexivity (fun _ -> tac) in
+      let _ = if List.length proof_seq.seq = 0 then (warn "Could not achieve simplification.") in 
+
+      tac
   )
 
 let config_egg ref = 
@@ -84,8 +87,9 @@ let config_egg ref =
      let sigma = Evd.from_env env in
      try
        let prod = Parse_record.access_record_body (Nametab.global ref) in
+       let _ = Feedback.msg_notice (str ("Record: " ^ C_utilities.term_kind_to_str env prod sigma)) in
        let constr_list = Parse_record.unpack_prod env prod sigma in
-       let expr_list = List.map (fun c -> Parse_goal.goal_to_sexp env c sigma) constr_list in
+       let expr_list = List.map (fun (c, rule_name) -> (Parse_goal.goal_to_sexp env c sigma, rule_name)) constr_list in
        let _ = 
         try 
           Rust.configure_egg expr_list

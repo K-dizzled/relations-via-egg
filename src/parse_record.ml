@@ -15,8 +15,10 @@ let access_record_body gref =
 let rec unpack_prod env prod sigma = 
   match EConstr.kind sigma prod with
   | Prod (name, typ, body) -> 
+    let bn = Context.binder_name name in 
+    let costructor_name = Pp.string_of_ppcmds (Names.Name.print bn) in 
     if EConstr.isProd sigma body then
-      typ :: (unpack_prod env body sigma)
+      (typ, costructor_name) :: (unpack_prod env body sigma)
     else
-      [typ]
+      [(typ, costructor_name)]
   | _ -> raise (Record_parse_exp "Expected a product")

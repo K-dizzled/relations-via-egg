@@ -9,7 +9,7 @@ use crate::{
 use std::collections::LinkedList;
 
 #[ocaml::func]
-pub fn rust_configure_egg(axioms: LinkedList<GoalSExpr>) -> Result<(), ocaml::Error> {    
+pub fn rust_configure_egg(axioms: LinkedList<(GoalSExpr, String)>) -> Result<(), ocaml::Error> {    
     let ax = Axioms(axioms);
     let res = save_axioms("axioms.json", ax);
     if let Err(_error) = res {
@@ -46,7 +46,12 @@ pub fn rust_prove_eq(expr1: GoalSExpr, expr2: GoalSExpr) -> Result<ProofSeq, oca
     let rl1 = rl1.unwrap(); let rl2 = rl2.unwrap();
 
     let mut rules = make_rules();
-    extend_rules_w_axioms(&mut rules);
+
+    let new_rules = extend_rules_w_axioms(&mut rules);
+    if let Err(_error) = new_rules {
+        return Err(ocaml::Error::Message("Unable to load axioms"));
+    }
+
     let mut runner = Runner::default()
         .with_explanations_enabled()
         .with_expr(&rl1)

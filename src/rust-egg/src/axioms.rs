@@ -11,7 +11,7 @@ use serde::{Serialize, Deserialize};
 use std::collections::LinkedList;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
-pub struct Axioms(pub LinkedList<GoalSExpr>);
+pub struct Axioms(pub LinkedList<(GoalSExpr, String)>);
 
 pub fn load_axioms<P: AsRef<Path>>(path: P) -> Axioms {
     if let Ok(mut file) = File::open(path) {
@@ -42,7 +42,8 @@ fn rewrite_in_runtime(name: &str, from: &str, to: &str) -> Rewrite<RelLanguage, 
 
 pub fn extract_rules_from_axioms(axioms: &Axioms) -> Result<RelRules> {
     let mut rules = vec![];
-    for (ind, axiom) in axioms.0.iter().enumerate() {
+    for axiom in axioms.0.iter() {
+        let (axiom, ax_name) = axiom;
         if let GoalSExpr::Application(f, args) = axiom {
             if args.len() != 2 {
                 continue;
@@ -58,20 +59,20 @@ pub fn extract_rules_from_axioms(axioms: &Axioms) -> Result<RelRules> {
 
             match f.as_str() {
                 "@inclusion" => {
-                    rules.push( rewrite_in_runtime(
-                        &format!("Wf_{}", ind),
+                    rules.push(rewrite_in_runtime(
+                        ax_name.as_str(),
                         expr1.as_str(),
                         expr2.as_str()
                     ));
                 },
                 "@same_relation" => {
-                    rules.push( rewrite_in_runtime(
-                        &format!("Wf_{}", ind),
+                    rules.push(rewrite_in_runtime(
+                        ax_name.as_str(),
                         expr1.as_str(),
                         expr2.as_str()
                     ));
-                    rules.push( rewrite_in_runtime(
-                        &format!("Wf_{}_rev", ind),
+                    rules.push(rewrite_in_runtime(
+                        &format!("{}-rev", ax_name.as_str()),
                         expr2.as_str(),
                         expr1.as_str()
                     ));
@@ -90,11 +91,3 @@ pub fn extend_rules_w_axioms(wf: &mut RelRules) -> Result<()> {
     wf.extend(axioms_rules);
     Ok(())
 }
-
-
-// Never gonna give you up
-// Never gonna let you down
-// Never gonna run around and desert you
-// Never gonna make you cry
-// Never gonna say goodbye
-// Never gonna tell a lie and hurt you

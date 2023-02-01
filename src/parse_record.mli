@@ -8,4 +8,4 @@ val unpack_prod :
   Environ.env -> 
   EConstr.t -> 
   Evd.evar_map -> 
-  EConstr.t list
+  (EConstr.t * string) list
