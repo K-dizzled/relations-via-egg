@@ -23,6 +23,9 @@ let extract_goal_eq_sides (goal : Proofview.Goal.t) =
     with Parse_goal.Goal_parse_exp msg -> 
       CErrors.user_err (str msg) in
   
+  let _ = debug ("Goal before parsing: " ^ (C_utilities.term_kind_to_str env concl sigma)) in
+  let _ = debug ("Goal after parsing: " ^ (Parse_goal.s_expr_to_string expr)) in 
+  
   let lhs, rhs = 
     try 
       Parse_goal.split_goal expr 

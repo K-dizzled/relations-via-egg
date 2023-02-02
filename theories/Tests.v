@@ -66,11 +66,15 @@ Variable kek : A -> A -> Prop.
 Variable lol : A -> A -> Prop.
 Variable mem : A -> A -> Prop.
 
+Variable kek_s : A -> Prop.
+Variable lol_s : A -> Prop.
+
 Record Wf :=
   { 
     kek_in_lol : kek ⊆ lol ;
     lol_in_mem : lol ⊆ mem ;
     mem_in_kek : mem ≡ kek ;; lol^*;
+    e_kek_in_e_lol : ⦗kek_s⦘ ⊆ ⦗lol_s⦘;
   }.
 
 Cegg config Wf.
@@ -101,7 +105,31 @@ Lemma ccc WF (r : relation A) :
   kek ;; lol^* ⊆ mem.
 Proof.
   Cegg solve eq.
-Abort.
+Qed.
+
+Lemma test_eqv_rel WF (r : relation A) :
+  ⦗kek_s⦘ ⊆ ⦗lol_s⦘.
+Proof.
+  Cegg solve eq.
+Qed.
+
+Lemma test_multiple_args (r1 : relation A) (r2 : relation A) :
+  r1 ∩ r2 ⊆ r2 ∩ r1.
+Proof.
+  Cegg solve eq.
+Qed.
+
+Lemma test_three_args (r1 : relation A) (r2 : relation A) (r3 : relation A) :
+  (r1 ∩ r2) ∩ r3 ⊆ r1 ∩ (r2 ∩ r3).
+Proof.
+  Cegg solve eq.
+Qed.
+
+Lemma test_interAC (r : relation A) (r' : relation A) (r'' : relation A) :
+  r ∩ (r' ∩ r'') ⊆ r' ∩ (r ∩ r'').
+Proof.
+  Cegg solve eq.
+Qed.
 
 End Tests.
 

@@ -26,7 +26,11 @@ let rec term_kind_to_str env trm sigma =
     " and body: " ^ 
     (term_to_str env body sigma)
   | LetIn _ -> "LetIn"
-  | App _ -> "App"
+  | App (f, args) -> 
+    let f_name = term_to_str env f sigma in
+    let args_str = Array.fold_left (fun acc arg -> 
+      acc ^ " " ^ (term_to_str env arg sigma)) "" args in
+    "App " ^ f_name ^ " with args: " ^ args_str
   | Const _ -> "Const"
   | Ind _ -> "Ind"
   | Construct _ -> "Construct"

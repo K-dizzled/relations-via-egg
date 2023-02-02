@@ -75,16 +75,29 @@ fn make_rules() -> RelRules {
 
     rules.extend(
         vec![
-            // rewrite!("seqA"    ; "(;; (;; ?a ?b) ?c)" => "(;; (;; ?a ?b) ?c)"),
+            // Checked
             rewrite!("rt_cr"  ; "(;; (* ?a) (? ?a))" => "(* ?a)"),
-
-            rewrite!("seq_id_l"   ; "(;; top ?a)" => "?a"),
-            rewrite!("seq_id_r"   ; "(;; ?a top)" => "?a"),
             rewrite!("seq_false_l"; "(;; bot ?a)" => "bot"),
             rewrite!("seq_false_r"; "(;; ?a bot)" => "bot"),
-            rewrite!("seq_ct"; "(;; (+ ?a) (+ ?a))" => "(+ ?a)"),
+            rewrite!("interC"; "(&& ?r1 ?r2)" => "(&& ?r2 ?r1)"),
+            rewrite!("interA"; "(&& (&& ?r1 ?r2) ?r3)" => "(&& ?r1 (&& ?r2 ?r3))"),
+            rewrite!("interAC"; "(&& ?r (&& ?r' ?r''))" => "(&& ?r' (&& ?r ?r''))"),
+            rewrite!("interK"; "(&& ?r ?r)" => "?r"),
+            rewrite!("inter_false_r"; "(&& ?r bot)" => "bot"),
+            rewrite!("inter_false_l"; "(&& bot ?r)" => "bot"),
+            rewrite!("inter_union_r"; "(&& ?r (|| ?r1 ?r2))" => "(|| (&& ?r ?r1) (&& ?r ?r2))"),
+            rewrite!("inter_union_l"; "(&& (|| ?r1 ?r2) ?r)" => "(|| (&& ?r1 ?r) (&& ?r2 ?r))"),
+
+            // Checked but not covered by tests
+            rewrite!("ct_ct"; "(;; (+ ?a) (+ ?a))" => "(+ ?a)"),
             rewrite!("ct_rt"; "(;; (+ ?a) (* ?a))" => "(+ ?a)"),
             rewrite!("rt_ct"; "(;; (* ?a) (+ ?a))" => "(+ ?a)"),
+
+            // Unchecked
+
+            // Disable
+            rewrite!("seq_id_l"   ; "(;; top ?a)" => "?a"),
+            rewrite!("seq_id_r"   ; "(;; ?a top)" => "?a"),
         ]);
 
     rules
@@ -102,9 +115,7 @@ fn get_simplification_proof(expr: &RecExpr<RelLanguage>) -> ProofSeq {
     let root = runner.roots[0];
 
     let extractor = Extractor::new(&runner.egraph, AstSize);
-    let (best_cost, best) = extractor.find_best(root);
-
-    println!("Simplified {} to {} with cost {}", expr, best, best_cost);
+    let (_best_cost, best) = extractor.find_best(root);
     
     let mut explanation = runner.explain_equivalence(&expr, &best);
     let proof = parse_proof(&mut explanation);
