@@ -1,6 +1,14 @@
 open Rust_api
 open Pp
 
+module Control = struct
+  let debug = false
+  let debug_feedback = false
+end
+
+module Debug = Helper.Debug (Control)
+open Debug
+
 let warn msg = CWarnings.create ~name:"Coq-Egg" ~category:"No impact tactic call"
                             (fun _ -> strbrk msg) ()
 
@@ -65,7 +73,7 @@ let try_prove () =
         try 
           Rust.prove_eq lhs rhs
         with err -> 
-          CErrors.user_err (str (Printexc.to_string err)) in
+          CErrors.user_err (str "Unable to prove equivalence.") in
 
       let tac = multiple_rewrites_tac proof_seq in 
       
@@ -87,7 +95,7 @@ let config_egg ref =
      let sigma = Evd.from_env env in
      try
        let prod = Parse_record.access_record_body (Nametab.global ref) in
-       let _ = Feedback.msg_notice (str ("Record: " ^ C_utilities.term_kind_to_str env prod sigma)) in
+       let _ = debug_feedback ("Record: " ^ C_utilities.term_kind_to_str env prod sigma) in
        let constr_list = Parse_record.unpack_prod env prod sigma in
        let expr_list = List.map (fun (c, rule_name) -> (Parse_goal.goal_to_sexp env c sigma, rule_name)) constr_list in
        let _ = 
