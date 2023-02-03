@@ -4,6 +4,7 @@ use crate::{
     goal_preprocess::*,
     proof_sequence::*,
     axioms::*,
+    make_rules::*,
 };
 
 use std::collections::LinkedList;
@@ -63,45 +64,6 @@ pub fn rust_prove_eq(expr1: GoalSExpr, expr2: GoalSExpr) -> Result<ProofSeq, oca
     Ok(ProofSeq::from(proof))
 }
 
-type RelRules = Vec<Rewrite<RelLanguage, ()>>;
-/// Extract hahn COQ library theorems to rewrite
-/// rules and afterwards build graph using them
-fn make_rules() -> RelRules {
-    let mut rules =
-        vec![ 
-            rewrite!("ct_end"  ; "(+ ?a)" <=> "(;; (* ?a) ?a)"),
-            rewrite!("ct_begin"; "(+ ?a)" <=> "(;; ?a (* ?a))"),
-        ].concat();
-
-    rules.extend(
-        vec![
-            // Checked
-            rewrite!("rt_cr"  ; "(;; (* ?a) (? ?a))" => "(* ?a)"),
-            rewrite!("seq_false_l"; "(;; bot ?a)" => "bot"),
-            rewrite!("seq_false_r"; "(;; ?a bot)" => "bot"),
-            rewrite!("interC"; "(&& ?r1 ?r2)" => "(&& ?r2 ?r1)"),
-            rewrite!("interA"; "(&& (&& ?r1 ?r2) ?r3)" => "(&& ?r1 (&& ?r2 ?r3))"),
-            rewrite!("interAC"; "(&& ?r (&& ?r' ?r''))" => "(&& ?r' (&& ?r ?r''))"),
-            rewrite!("interK"; "(&& ?r ?r)" => "?r"),
-            rewrite!("inter_false_r"; "(&& ?r bot)" => "bot"),
-            rewrite!("inter_false_l"; "(&& bot ?r)" => "bot"),
-            rewrite!("inter_union_r"; "(&& ?r (|| ?r1 ?r2))" => "(|| (&& ?r ?r1) (&& ?r ?r2))"),
-            rewrite!("inter_union_l"; "(&& (|| ?r1 ?r2) ?r)" => "(|| (&& ?r1 ?r) (&& ?r2 ?r))"),
-
-            // Checked but not covered by tests
-            rewrite!("ct_ct"; "(;; (+ ?a) (+ ?a))" => "(+ ?a)"),
-            rewrite!("ct_rt"; "(;; (+ ?a) (* ?a))" => "(+ ?a)"),
-            rewrite!("rt_ct"; "(;; (* ?a) (+ ?a))" => "(+ ?a)"),
-
-            // Unchecked
-
-            // Disable
-            rewrite!("seq_id_l"   ; "(;; top ?a)" => "?a"),
-            rewrite!("seq_id_r"   ; "(;; ?a top)" => "?a"),
-        ]);
-
-    rules
-}
 
 /// Build a E-graph for expression, get the best 
 /// element, then extract the sequence of rules
@@ -126,3 +88,4 @@ fn get_simplification_proof(expr: &RecExpr<RelLanguage>) -> ProofSeq {
 pub mod goal_preprocess;
 pub mod proof_sequence;
 pub mod axioms;
+pub mod make_rules;

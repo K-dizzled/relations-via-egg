@@ -20,7 +20,7 @@ let get_thr_econstr (thr : string) =
 let general_rewrite (constr : EConstr.constr) (l2r : bool) =   
   Equality.general_rewrite ~where:None
     ~l2r:l2r
-    Locus.AllOccurrences
+    (Locus.OnlyOccurrences [1])
     ~freeze:true
     ~dep:false
     ~with_evars:true

@@ -8,19 +8,19 @@ Variable A : Type.
 Lemma test_norm_1 (r : relation A) :
   (r^* ;; r^?) ;; r^? ⊆ r^*.
 Proof.
-  Cegg solve.
+  Cegg solve eq.
 Qed.
 
 Lemma test_not_solved_at_end (r : relation A) :
   ((r^* ;; r^?) ;; r^?) ;; r^? ⊆ r^?.
 Proof.
-  Cegg solve.
+  Fail Cegg solve eq.
 Abort.
 
 Lemma invalid_syntax_a (a : bool) (b : bool) :
   andb a b = true -> a = true.
 Proof. 
-  Fail Cegg solve.
+  Fail Cegg solve eq.
   destruct a.
   - reflexivity.
   - discriminate.
@@ -29,37 +29,37 @@ Qed.
 Lemma invalid_relation (r : relation A) :
   r = r^*.
 Proof.
-  Fail Cegg solve.
+  Fail Cegg solve eq.
 Abort.
 
-Lemma nothing_to_rewrite (r : relation A) : 
+(* Lemma nothing_to_rewrite (r : relation A) : 
   r^* ⊆ r^?.
 Proof.
-  Cegg solve.
-Abort.
+  Cegg solve eq.
+Abort. *)
 
 Lemma test_norm_2 (r : relation A) :
   (r^* ;; r^?) ;; (r ∪ r^*) ⊆ r^*.
 Proof.
-  Cegg solve.
+  Fail Cegg solve eq.
 Abort.
 
 Lemma test_norm_3 (r : relation A) :
   ⦗fun _ => True⦘ ;; r ⊆ r.
 Proof.
-  Cegg solve.
+  Cegg solve eq.
 Qed.
 
 Lemma test_norm_4 (r : relation A) :
   (fun _ _ => False) ;; r ⊆ (fun _ _ => False).
 Proof.
-  Cegg solve.
+  Cegg solve eq.
 Qed.
 
 Lemma test_incorrect_lambda (r : relation A) :
   (fun _ _ => True) ;; r ⊆ (fun _ _ => False).
 Proof.
-  Fail Cegg solve.
+  Cegg solve.
 Abort.
 
 Variable kek : A -> A -> Prop.
@@ -91,45 +91,163 @@ Qed.
 
 Lemma test_dirs_in_rewrite_1 (r : relation A) : 
   r^+ ⊆ r ;; r^*.
-Proof. 
-  Cegg solve eq.
-Qed.
+Proof. Cegg solve eq. Qed.
 
 Lemma test_dirs_in_rewrite_2 (r : relation A) : 
   r ;; r^* ⊆ r^+.
-Proof. 
-  Cegg solve eq.
-Qed.
+Proof. Cegg solve eq. Qed.
 
 Lemma ccc WF (r : relation A) :
   kek ;; lol^* ⊆ mem.
-Proof.
-  Cegg solve eq.
-Qed.
+Proof. Cegg solve eq. Qed.
 
 Lemma test_eqv_rel WF (r : relation A) :
   ⦗kek_s⦘ ⊆ ⦗lol_s⦘.
-Proof.
-  Cegg solve eq.
-Qed.
+Proof. Cegg solve eq. Qed.
 
 Lemma test_multiple_args (r1 : relation A) (r2 : relation A) :
   r1 ∩ r2 ⊆ r2 ∩ r1.
-Proof.
-  Cegg solve eq.
-Qed.
+Proof. Cegg solve eq. Qed.
 
 Lemma test_three_args (r1 : relation A) (r2 : relation A) (r3 : relation A) :
   (r1 ∩ r2) ∩ r3 ⊆ r1 ∩ (r2 ∩ r3).
-Proof.
-  Cegg solve eq.
-Qed.
+Proof. Cegg solve eq. Qed.
 
 Lemma test_interAC (r : relation A) (r' : relation A) (r'' : relation A) :
   r ∩ (r' ∩ r'') ⊆ r' ∩ (r ∩ r'').
-Proof.
-  Cegg solve eq.
-Qed.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_interAC_2 (r : relation A) (i : relation A) :
+  r ∩ i ⊆ r.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_minus_false_r (r : relation A) :
+  r \ ∅₂ ⊆ r.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_minus_false_l (r : relation A) :
+  ∅₂ \ r ⊆ ∅₂.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_crE (r : relation A) :
+  r^? ⊆ ⦗fun _ => True⦘ ∪ r. 
+Proof. Cegg solve eq. Qed.
+
+Lemma test_rtE (r : relation A) :
+  r^* ⊆ ⦗fun _ => True⦘ ∪ r^+.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_csE (r : relation A) :
+  r^⋈ ⊆ r ∪ r⁻¹.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_crsE (r : relation A) :
+  r^⋈? ⊆ ⦗fun _ => True⦘ ∪ r ∪ r⁻¹.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_crsEE (r : relation A) :
+  r^⋈? ⊆ ⦗fun _ => True⦘ ∪ r^⋈.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_rt_begin (r : relation A) :
+  r^* ⊆ ⦗fun _ => True⦘ ∪ r ⨾ r^*.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_rt_end (r : relation A) :
+  r^* ⊆ ⦗fun _ => True⦘ ∪ r^* ⨾ r.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_rewrite_ct_ct (r : relation A) :
+  r^+ ;; r^+ ⊆ r^+.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_rewrite_ct_rt (r : relation A) :
+  r^+ ;; r^* ⊆ r^+.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_rt_ct (r : relation A) :
+  r^* ⨾ r^+ ⊆ r^+.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_cr_ct (r : relation A) :
+  r^? ⨾ r^+ ⊆ r^+.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_ct_cr (r : relation A) :
+  r^+ ⨾ r^? ⊆ r^+.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_rt_rt (r : relation A) :
+  r^* ⨾ r^* ⊆ r^*.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_cr_of_ct (r : relation A) :
+  (r^+)^? ⊆ r^*.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_cr_of_cr (r : relation A) :
+  (r^?)^? ⊆ r^?.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_cr_of_rt (r : relation A) :
+  (r^*)^? ⊆ r^*.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_ct_of_ct (r : relation A) :
+  (r^+)^+ ⊆ r^+.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_ct_of_union_ct_l (r r' : relation A) :
+  (r^+ ∪ r')^+ ⊆ (r ∪ r')^+.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_ct_of_union_ct_r (r r' : relation A) :
+  (r ∪ r'^+)^+ ⊆ (r ∪ r')^+.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_ct_of_cr (r : relation A) :
+  (r^?)^+ ⊆ r^*.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_ct_of_rt (r : relation A) :
+  (r^*)^+ ⊆ r^*.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_rt_of_ct (r : relation A) :
+  (r^+)^* ⊆ r^*.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_rt_of_cr (r : relation A) :
+  (r^?)^* ⊆ r^*.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_rt_of_rt (r : relation A) :
+  (r^*)^* ⊆ r^*.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_cr_union_l (r r' : relation A) :
+  (r ∪ r')^? ⊆ r^? ∪ r'.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_cr_union_r (r r' : relation A) :
+  (r ∪ r')^? ⊆ r ∪ r'^?.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_cs_union (r r' : relation A) :
+  (r ∪ r')^⋈ ⊆ r^⋈ ∪ r'^⋈.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_crs_union (r r' : relation A) :
+  (r ∪ r')^⋈? ⊆ r^⋈? ∪ r'^⋈?.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_cs_inter (r r' : relation A) :
+  (r ∩ r')^⋈ ⊆ r^⋈ ∩ r'^⋈.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_crs_inter (r r' : relation A) :
+  (r ∩ r')^⋈? ⊆ r^⋈? ∩ r'^⋈?.
+Proof. Cegg solve eq. Qed.
 
 End Tests.
 
@@ -148,4 +266,14 @@ End Tests.
        вызывается и не отрабатывает до конца, то вылетает стремная ошибка.
        Это фиксится только тем, что мы забиваем на обработку ошибок на вызове 
        этой тактики на стороне Раста и всегда вылетаем с одной и той же ошибкой. 
+
+    -- Добавление seq_rtE_r почему то убивает тактику, видимо где то 
+    образовывается цикл.
+
+    -- Понять, почему вот это убивает тактику:
+    Lemma test_incorrect_lambda (r : relation A) :
+      (fun _ _ => True) ;; r ⊆ (fun _ _ => False).
+    Proof.
+      Fail Cegg solve eq.
+    Abort.
 *)

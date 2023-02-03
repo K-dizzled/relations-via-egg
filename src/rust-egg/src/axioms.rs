@@ -5,7 +5,7 @@ use egg::*;
 
 use crate::{
     goal_preprocess::*,
-    RelRules,
+    make_rules::RelRules,
 };
 use serde::{Serialize, Deserialize};
 use std::collections::LinkedList;

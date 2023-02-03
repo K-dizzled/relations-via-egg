@@ -25,19 +25,25 @@ unsafe impl ocaml::FromValue<'_> for Box<GoalSExpr> {
 define_language! {
     /// Define a language of relations
     /// 1. Top, bot
-    /// 2. Composition of relations, transitive closure, 
+    /// 2. A compete set, i. e. (fun x => True)
+    /// 3. Composition of relations, transitive closure, 
     /// reflexive closure, reflexive transitive closure
-    /// 3. Union, intersection, setminus
-    /// 4. Symbols
+    /// 4. Union, intersection, setminus
+    /// 5. Symbols
     pub enum RelLanguage {
         "top" = Top,
         "bot" = Bot,
+
+        "complete_set" = CompleteSet,
 
         ";;" = Seq([Id; 2]),
         "+" = CT(Id),
         "?" = RT(Id),
         "*" = CRT(Id),
         "eqv_rel" = Eqv(Id),
+        "clos_sym" = CS(Id),
+        "-1" = Transpose(Id),
+        "clos_refl_sym" = CRS(Id),
 
         "||" = Union([Id; 2]),
         "&&" = Inter([Id; 2]),
@@ -60,6 +66,9 @@ lazy_static! {
         map.insert("minus_rel", "setminus");
         map.insert("inter_rel", "&&");
         map.insert("eqv_rel", "eqv_rel");
+        map.insert("clos_sym", "clos_sym");
+        map.insert("transp", "-1");
+        map.insert("clos_refl_sym", "clos_refl_sym");
         map
     };
 
@@ -101,14 +110,18 @@ pub fn expr_to_rellang(sexp: &GoalSExpr) -> Result<RecExpr<RelLanguage>, ExprPar
         false
     }
 
-    fn is_subterm_bot(sexp: &GoalSExpr) -> bool {
+    fn is_subterm_bot_top(sexp: &GoalSExpr) -> Option<bool> {
         if let GoalSExpr::Lambda(_, body) = sexp {
-            return is_subterm_lambda_to(body.as_ref(), COQ_FALSE.as_str());
+            if is_subterm_lambda_to(body.as_ref(), COQ_TRUE.as_str()) {
+                return Some(true);
+            } else if is_subterm_lambda_to(body.as_ref(), COQ_FALSE.as_str()) {
+                return Some(false);
+            }
         }
-        false
+        None
     }
 
-    fn is_application_top(op: &str, args: &LinkedList<GoalSExpr>) -> bool {
+    fn is_application_compset(op: &str, args: &LinkedList<GoalSExpr>) -> bool {
         if op == "eqv_rel" && args.len() == 1 {
             return is_subterm_lambda_to(args.front().unwrap(), COQ_TRUE.as_str());
         }
@@ -128,9 +141,9 @@ pub fn expr_to_rellang(sexp: &GoalSExpr) -> Result<RecExpr<RelLanguage>, ExprPar
                     None => f.as_str(),
                 };
 
-                // Check if Top was passed (i. e. eqv_rel (fun _ => True))
-                if is_application_top(op, args) {
-                    return Ok(expr.add(RelLanguage::Top));
+                // Check if Complete Set was passed (i. e. eqv_rel (fun _ => True))
+                if is_application_compset(op, args) {
+                    return Ok(expr.add(RelLanguage::CompleteSet));
                 }
 
                 let arg_ids: Result<Vec<Id>, _> =
@@ -141,12 +154,13 @@ pub fn expr_to_rellang(sexp: &GoalSExpr) -> Result<RecExpr<RelLanguage>, ExprPar
             },
 
             GoalSExpr::Lambda(_, _) => {
-                // Only check if lambda is a Bot const
-                // (i.e. a (fun _ _ => False)), otherwise throw an error
-                return if is_subterm_bot(sexp) {
-                    Ok(expr.add(RelLanguage::Bot))
-                } else {
-                    Err(ExprParseError::UnexpectedLambdaUse)
+                // Only check if lambda is a Bot or Top const
+                // (i.e. a (fun _ _ => False)) / (i.e. a (fun _ _ => True)) 
+                // otherwise return an error
+                match is_subterm_bot_top(sexp) {
+                    Some(true) => Ok(expr.add(RelLanguage::Top)),
+                    Some(false) => Ok(expr.add(RelLanguage::Bot)),
+                    None => Err(ExprParseError::UnexpectedLambdaUse),
                 }
             }
         }

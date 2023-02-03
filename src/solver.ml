@@ -78,6 +78,8 @@ let try_prove () =
         with err -> 
           CErrors.user_err (str "Unable to prove equivalence.") in
 
+      let proof_str = String.concat " " (List.map (fun x -> Parse_goal.rule_to_string x) proof_seq.seq) in
+      let _ = debug ("Proof sequence: " ^ proof_str) in
       let tac = multiple_rewrites_tac proof_seq in 
       
       (* Call auto to get rid of newly 
