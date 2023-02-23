@@ -1,6 +1,8 @@
 _build
 .vscode
 .DS_Store
-
 *.idea
+
 axioms.json
+egraphs
+last_expr.pdf
