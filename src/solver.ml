@@ -2,7 +2,7 @@ open Rust_api
 open Pp
 
 module Control = struct
-  let debug = false
+  let debug = true
   let debug_feedback = true
 end
 

@@ -7,7 +7,7 @@ Variable A : Type.
 
 (* assert_eq!(simplify("(;; ( * a) (;; (? a) (? a)))"), "( * a)"); *)
 Lemma aaa (r : relation A) : 
-  (r^* ;; r^?) ;; r^? ⊆ r^*.
+  (r^* ;; r^?) ;; r^? ≡ r^*.
 Proof.
   rewrite rt_cr.
   rewrite rt_cr.
@@ -15,7 +15,7 @@ Proof.
 Qed.
 
 Lemma aaa_egg (r : relation A) :
-  (r^* ;; r^?) ;; r^? ⊆ r^*.
+  (r^* ;; r^?) ;; r^? ≡ r^*.
 Proof.
   Cegg solve.
 Qed.

@@ -51,7 +51,7 @@ let split_goal expr =
     if List.length args != 2 then
       raise (Goal_parse_exp "Must be a binary operator.")
     else
-      if f = "@inclusion" then 
+      if f = "@same_relation" then 
         (List.nth args 0, List.nth args 1)
       else 
         raise (Goal_parse_exp "Goal must be of form a ⊆ b.")
