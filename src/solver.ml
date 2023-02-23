@@ -3,7 +3,7 @@ open Pp
 
 module Control = struct
   let debug = false
-  let debug_feedback = false
+  let debug_feedback = true
 end
 
 module Debug = Helper.Debug (Control)
@@ -74,7 +74,7 @@ let try_prove () =
       let lhs, rhs = extract_goal_eq_sides goal in
       let proof_seq = 
         try 
-          Rust.prove_eq lhs rhs
+          Rust.prove_eq lhs rhs Control.debug
         with err -> 
           CErrors.user_err (str "Unable to prove equivalence.") in
 

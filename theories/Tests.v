@@ -32,18 +32,6 @@ Proof.
   Fail Cegg solve eq.
 Abort.
 
-(* Lemma nothing_to_rewrite (r : relation A) : 
-  r^* ⊆ r^?.
-Proof.
-  Cegg solve eq.
-Abort. *)
-
-Lemma test_norm_2 (r : relation A) :
-  (r^* ;; r^?) ;; (r ∪ r^*) ⊆ r^*.
-Proof.
-  Fail Cegg solve eq.
-Abort.
-
 Lemma test_norm_3 (r : relation A) :
   ⦗fun _ => True⦘ ;; r ⊆ r.
 Proof.
@@ -109,18 +97,6 @@ Lemma test_multiple_args (r1 : relation A) (r2 : relation A) :
   r1 ∩ r2 ⊆ r2 ∩ r1.
 Proof. Cegg solve eq. Qed.
 
-Lemma test_three_args (r1 : relation A) (r2 : relation A) (r3 : relation A) :
-  (r1 ∩ r2) ∩ r3 ⊆ r1 ∩ (r2 ∩ r3).
-Proof. Cegg solve eq. Qed.
-
-Lemma test_interAC (r : relation A) (r' : relation A) (r'' : relation A) :
-  r ∩ (r' ∩ r'') ⊆ r' ∩ (r ∩ r'').
-Proof. Cegg solve eq. Qed.
-
-Lemma test_interAC_2 (r : relation A) (i : relation A) :
-  r ∩ i ⊆ r.
-Proof. Cegg solve eq. Qed.
-
 Lemma test_minus_false_r (r : relation A) :
   r \ ∅₂ ⊆ r.
 Proof. Cegg solve eq. Qed.
@@ -155,10 +131,6 @@ Proof. Cegg solve eq. Qed.
 
 Lemma test_rt_end (r : relation A) :
   r^* ⊆ ⦗fun _ => True⦘ ∪ r^* ⨾ r.
-Proof. Cegg solve eq. Qed.
-
-Lemma test_rewrite_ct_ct (r : relation A) :
-  r^+ ;; r^+ ⊆ r^+.
 Proof. Cegg solve eq. Qed.
 
 Lemma test_rewrite_ct_rt (r : relation A) :
@@ -241,12 +213,28 @@ Lemma test_crs_union (r r' : relation A) :
   (r ∪ r')^⋈? ⊆ r^⋈? ∪ r'^⋈?.
 Proof. Cegg solve eq. Qed.
 
-Lemma test_cs_inter (r r' : relation A) :
-  (r ∩ r')^⋈ ⊆ r^⋈ ∩ r'^⋈.
+Lemma test_unionC (r r' : relation A) :
+  r ∪ r' ⊆ r' ∪ r.
 Proof. Cegg solve eq. Qed.
 
-Lemma test_crs_inter (r r' : relation A) :
-  (r ∩ r')^⋈? ⊆ r^⋈? ∩ r'^⋈?.
+Lemma test_unionK (r : relation A) :
+  r ∪ r ⊆ r.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_union_false_r (r : relation A) :
+  r ∪ ∅₂ ⊆ r.
+Proof. Cegg solve eq. Qed.
+
+Lemma test_union_false_l (r : relation A) :
+  ∅₂ ∪ r ⊆ r.
+Proof. Cegg solve eq. Qed.
+
+Lemma cr_seq (r r' : relation A) : 
+  r^? ⨾ r' ⊆ r' ∪ r ⨾ r'.
+Proof. Cegg solve eq. Qed.
+
+Lemma ct_seq_swap (r r' : relation A) :
+  (r ⨾ r')⁺ ⨾ r ⊆ r ⨾ (r' ⨾ r)⁺.
 Proof. Cegg solve eq. Qed.
 
 End Tests.
@@ -276,4 +264,7 @@ End Tests.
     Proof.
       Fail Cegg solve eq.
     Abort.
+
+    -- Бесконечно порождающие: seq_union_l, seq_union_r, леммы
+       про ассциативность;
 *)

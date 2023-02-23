@@ -1,5 +1,5 @@
 use std::collections::LinkedList;
-use egg::{Explanation, FlatTerm, Language};
+use egg::{Explanation, FlatTerm, Language, Symbol};
 
 /// Direction of Rewrite in the 
 /// proof
@@ -7,6 +7,15 @@ use egg::{Explanation, FlatTerm, Language};
 pub enum Direction {
     Forward,
     Backward,
+}
+
+impl Direction {
+    fn neg(&self) -> Direction {
+        match self {
+            Direction::Forward => Direction::Backward,
+            Direction::Backward => Direction::Forward,
+        }
+    }
 }
 
 /// A single rewrite in the proof
@@ -51,20 +60,28 @@ pub fn ft_to_rule<L>(ft: &FlatTerm<L>) -> Option<Rule> where
     L: std::fmt::Display,
     L: egg::FromOp,
 {
-    if let Some(rule_name) = &ft.forward_rule {
+    fn rule_from_rule_name(rule_name: &Symbol, direction: Direction) -> Option<Rule> {
         let rule_name = (*rule_name).to_string();
         if rule_name.ends_with("-rev") {
             let rule_name_wo_dir = rule_name.split("-rev").next().unwrap();
             return Some(Rule {
-                direction: Direction::Backward,
+                direction: direction.neg(),
                 theorem: rule_name_wo_dir.to_string(),
             });
         }
 
         return Some(Rule {
-            direction: Direction::Forward,
+            direction,
             theorem: (*rule_name).to_string(),
         });
+    }
+
+    if let Some(rule_name) = &ft.forward_rule {
+        return rule_from_rule_name(rule_name, Direction::Forward);
+    }
+
+    if let Some(rule_name) = &ft.backward_rule {
+        return rule_from_rule_name(rule_name, Direction::Backward);
     }
 
     for child in &ft.children {
