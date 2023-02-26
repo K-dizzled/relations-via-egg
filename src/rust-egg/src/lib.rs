@@ -5,10 +5,10 @@ use crate::{
     proof_sequence::*,
     axioms::*,
     make_rules::*,
+    proof_strategy::*,
 };
 
 use std::collections::LinkedList;
-use std::path::Path;
 
 #[ocaml::func]
 pub fn rust_configure_egg(axioms: LinkedList<(GoalSExpr, String)>) -> Result<(), ocaml::Error> {    
@@ -33,28 +33,6 @@ pub fn rust_simplify_expr(expr: GoalSExpr) -> Result<ProofSeq, ocaml::Error> {
     Ok(get_simplification_proof(&rl.unwrap()))
 }
 
-fn debug_graph_pdf(egraph: &EGraph<RelLanguage, ()>, expr: &GoalSExpr, debug: bool) {
-    if debug {
-        let expr_str = expr_to_string(expr);
-        std::fs::create_dir_all("egraphs").unwrap();
-        let filename = "egraphs/".to_string() + &expr_str + ".pdf";
-        let names = [filename, "last_expr.pdf".to_string()];
-
-        for name in names.iter() {
-            // That's needed to add a '-q 1' flag to the dot call.
-            // Otherwise, graphviz is constantly printing
-            // warnings to stdout.
-            egraph.dot().run_dot(
-                &[<str as AsRef<Path>>::as_ref("-Tpdf"),
-                    "-q 1".as_ref(),
-                    "-o".as_ref(),
-                    name.as_ref()
-                ]
-            ).unwrap();
-        }
-    }
-}
-
 /// Generate proof of equivalence between two expressions.
 /// Build a E-graph for the lhs and then search it for
 /// the rhs.
@@ -76,17 +54,14 @@ pub fn rust_prove_eq(expr1: GoalSExpr, expr2: GoalSExpr, debug: bool) -> Result<
         return Err(ocaml::Error::Message("Unable to load axioms"));
     }
 
-    let mut runner = Runner::default()
-        .with_explanations_enabled()
-        .with_expr(&rl1)
-        .run(&rules);
+    let proof_strategy = ProofStrategySearchBoth {};
+    let proof = proof_strategy.prove_eq(&rl1, &rl2, &rules, debug);
+    if let Err(error) = proof {
+        let message = error.into();
+        return Err(ocaml::Error::Message(message));
+    }
 
-    debug_graph_pdf(&runner.egraph, &expr1, debug);
-
-    let mut explanation = runner.explain_equivalence(&rl1, &rl2);
-    let proof = parse_proof(&mut explanation);
-
-    Ok(ProofSeq::from(proof))
+    Ok(proof.unwrap())
 }
 
 
@@ -114,3 +89,4 @@ pub mod goal_preprocess;
 pub mod proof_sequence;
 pub mod axioms;
 pub mod make_rules;
+pub mod proof_strategy; 

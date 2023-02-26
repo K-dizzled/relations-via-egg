@@ -3,6 +3,8 @@ module type CONTROL = sig
     val debug : bool
 
     val debug_feedback : bool
+
+    val debug_egraphs : bool
 end
 module Debug :
     functor (X : CONTROL) ->
