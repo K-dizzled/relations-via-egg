@@ -6,6 +6,7 @@ use crate::{
     axioms::*,
     make_rules::*,
     proof_strategy::*,
+    egraph_intersect::intersect,
 };
 
 use std::collections::LinkedList;
@@ -89,4 +90,5 @@ pub mod goal_preprocess;
 pub mod proof_sequence;
 pub mod axioms;
 pub mod make_rules;
-pub mod proof_strategy; 
+pub mod proof_strategy;
+pub mod egraph_intersect; 

@@ -3,6 +3,7 @@ use crate::{
     RelRules,
     ProofSeq,
     parse_proof,
+    intersect,
 };
 use egg::*;
 use std::path::Path;
@@ -39,8 +40,8 @@ pub struct ProofStrategySBiA {}
 pub struct ProofStrategySearchBoth {}
 
 // Build two e-graphs for the lhs and the rhs and
-// then find their union.
-pub struct ProofStrategySearchUnion {}
+// then find their intersection.
+pub struct ProofStrategySearchIntersect {}
 
 fn debug_graph_pdf(egraph: &EGraph<RelLanguage, ()>, expr_str: &str, debug: bool) {
     if debug {
@@ -126,6 +127,53 @@ impl ProofStrategy for ProofStrategySearchBoth {
         debug_graph_pdf(&runner1.egraph, &expr1.to_string(), debug);
         let mut explanation = runner1.explain_equivalence(&expr1, &expr2);
         let proof = parse_proof(&mut explanation);
+
+        Ok(ProofSeq::from(proof))
+    }
+}
+
+impl ProofStrategy for ProofStrategySearchIntersect {
+    #[allow(unused)]
+    fn prove_eq(
+        &self,
+        expr1: &RecExpr<RelLanguage>,
+        expr2: &RecExpr<RelLanguage>,
+        rules: &RelRules,
+        debug: bool,
+    ) -> Result<ProofSeq, ProofError> {
+        let runner1 = Runner::default()
+            .with_explanations_enabled()
+            .with_expr(&expr1)
+            .run(rules);
+
+        let runner2 = Runner::default()
+            .with_explanations_enabled()
+            .with_expr(&expr2)
+            .run(rules);
+
+        let intersection = intersect(&runner1.egraph, &runner2.egraph, ());
+        if intersection.is_empty() {
+            return Err(ProofError::FailedToProve);
+        }
+
+        // take best cost from the intersection and show eq
+        // from the lhs to the intersection and from the intersection to the rhs.
+        let mut runner = Runner::default()
+            .with_explanations_enabled()
+            .with_egraph(intersection);
+
+        let root = runner.roots[0];
+
+        let extractor = Extractor::new(&runner.egraph, AstSize);
+        let (_best_cost, best) = extractor.find_best(root);
+
+        let mut explanation_left_to_mid = runner.explain_equivalence(&expr1, &best);
+        let mut proof = parse_proof(&mut explanation_left_to_mid);
+
+        let mut explanation_mid_to_right = runner.explain_equivalence(&best, &expr2);
+        let mut proof2 = parse_proof(&mut explanation_mid_to_right);
+
+        proof.append(&mut proof2);
 
         Ok(ProofSeq::from(proof))
     }
