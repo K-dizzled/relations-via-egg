@@ -5,10 +5,14 @@ module Control = struct
   let debug = true
   let debug_feedback = true
   let debug_egraphs = true
+  let time = true
 end
 
 module Debug = Helper.Debug (Control)
 open Debug
+
+let time_tac msg tac =
+  if Control.time then Proofview.tclTIME (Some msg) tac else tac
 
 let warn msg = CWarnings.create ~name:"Coq-Egg" ~category:"No impact tactic call"
                             (fun _ -> strbrk msg) ()

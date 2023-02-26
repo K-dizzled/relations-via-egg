@@ -1,3 +1,8 @@
+val time_tac : 
+  string ->
+  unit Proofview.tactic ->
+  unit Proofview.tactic
+
 val simplify_lhs : 
   unit -> 
   unit Proofview.tactic

@@ -15,5 +15,5 @@ TACTIC EXTEND cegg_solve
 END
 
 TACTIC EXTEND cegg_solve_eq
-| [ "Cegg" "solve" "eq" ] -> { try_prove () }
+| [ "Cegg" "solve" "eq" ] -> { time_tac "Try show eq" (try_prove ()) }
 END
