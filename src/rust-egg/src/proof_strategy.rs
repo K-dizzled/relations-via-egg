@@ -178,3 +178,40 @@ impl ProofStrategy for ProofStrategySearchIntersect {
         Ok(ProofSeq::from(proof))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::*;
+
+    #[test]
+    fn test_prove_eq() {
+        let rules = make_rules();
+        let exprs = vec![
+            ("(* (* r))",                              "(* r)"),
+            ("(;; (;; (* r) (? r)) (? r))",            "(* r)"),
+            ("(;; (;; (;; (* r) (? r)) (? r)) (? r))", "(* r)"),
+            ("(+ r)",                                  "(;; r (* r))"),
+            ("(;; (? r) (+ r))",                       "(+ r)"),
+            ("(+ (+ r))",                              "(+ r)"),
+            ("(+ (+ (|| r (+ r))))",                   "(+ (|| r (+ r)))"),
+        ];
+
+        let mut exprs_vec = vec![];
+        for (expr1, expr2) in exprs.iter() {
+            let expr1 = expr1.parse().unwrap();
+            let expr2 = expr2.parse().unwrap();
+            exprs_vec.push((expr1, expr2));
+        }
+
+        let strategies: Vec<Box<dyn ProofStrategy>> = vec![
+            Box::new(ProofStrategySearchBoth {}),
+        ];
+
+        for strategy in strategies {
+            for (expr1, expr2) in exprs_vec.iter() {
+                let proof = strategy.prove_eq(expr1, expr2, &rules, false);
+                assert!(proof.is_ok());
+            }
+        }
+    }
+}

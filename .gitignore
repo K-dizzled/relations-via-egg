@@ -6,3 +6,4 @@ _build
 axioms.json
 egraphs
 last_expr.pdf
+src/rust-egg/target 
