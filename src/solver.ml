@@ -96,6 +96,7 @@ let try_prove () =
       let tac_with_reflexivity = Proofview.tclTHEN tac_with_auto (Tactics.reflexivity) in 
       let tac = Proofview.tclOR tac_with_reflexivity (fun _ -> tac) in
       let _ = if List.length proof_seq.seq = 0 then (warn "Could not achieve simplification.") in 
+      let _ = debug ("") in
 
       tac
   )

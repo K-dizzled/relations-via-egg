@@ -1,4 +1,4 @@
-use egg::{Rewrite};
+use egg::{rewrite, Rewrite};
 use crate::RelLanguage;
 
 // Added "<=" rewrite pattern for more convenient 
@@ -9,7 +9,10 @@ macro_rules! rewrite {
         $name:expr;
         $lhs:tt <= $rhs:tt
         $(if $cond:expr)*
-    )  => {{ egg::rewrite!($name;  $rhs => $lhs $(if $cond)*) }};
+    )  => {{
+        let name_rev = String::from($name.clone()) + "-rev";
+        egg::rewrite!(name_rev;  $rhs => $lhs $(if $cond)*)
+    }};
     (
         $name:expr;
         $lhs:tt => $rhs:tt

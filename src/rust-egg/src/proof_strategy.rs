@@ -64,6 +64,11 @@ fn debug_graph_pdf(egraph: &EGraph<RelLanguage, ()>, expr_str: &str, debug: bool
     }
 }
 
+fn debug_msg(msg: &str, debug: bool) {
+    if debug {
+        println!("{}", msg);
+    }
+}
 
 impl ProofStrategy for ProofStrategySBiA {
     fn prove_eq(
@@ -119,6 +124,7 @@ impl ProofStrategy for ProofStrategySearchBoth {
 
             debug_graph_pdf(&runner2.egraph, &expr1.to_string(), debug);
             let mut explanation = runner2.explain_equivalence(&expr2, &expr1);
+            debug_msg(format!("Explanation: {:?}", explanation.to_string()).as_str(), debug);
             let proof = parse_proof(&mut explanation);
 
             return Ok(ProofSeq::from(proof));
@@ -126,6 +132,7 @@ impl ProofStrategy for ProofStrategySearchBoth {
 
         debug_graph_pdf(&runner1.egraph, &expr1.to_string(), debug);
         let mut explanation = runner1.explain_equivalence(&expr1, &expr2);
+        debug_msg(format!("Explanation: {:?}", explanation.to_string()).as_str(), debug);
         let proof = parse_proof(&mut explanation);
 
         Ok(ProofSeq::from(proof))
