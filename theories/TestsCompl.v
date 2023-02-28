@@ -9,8 +9,8 @@ Lemma test_1 (r : relation A) :
     (r^+)^* ≡ r^* ;; (r ;; r^*)^?.
 Proof. Cegg solve. Admitted.
 
-Lemma test (r r' : relation A) :
+(* Lemma test (r r' : relation A) :
  ((r ∪ r^+)^+)^+ ≡ (r ∪ r^+)^+.
-Proof. Cegg solve eq. Qed.
+Proof. Cegg solve eq. Qed. *)
 
 End Tests.

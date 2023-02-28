@@ -1,15 +1,14 @@
-use egg::{RecExpr, Symbol, Id, FromOpError, define_language, FromOp};
-use std::collections::{LinkedList, HashMap};
 use crate::ExprParseError::BadOp;
+use egg::{define_language, FromOp, FromOpError, Id, RecExpr, Symbol};
 use lazy_static::lazy_static;
-use serde::{Serialize, Deserialize};
 use ocaml::Value;
+use serde::{Deserialize, Serialize};
+use std::collections::{HashMap, LinkedList};
 
 /// Goal is received from OCaml
 /// as a simple s-expression
 /// consisting of applications.
-#[derive(ocaml::FromValue)]
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(ocaml::FromValue, Serialize, Deserialize, PartialEq, Debug)]
 pub enum GoalSExpr {
     Symbol(String),
     Application(String, LinkedList<GoalSExpr>),
@@ -26,7 +25,7 @@ define_language! {
     /// Define a language of relations
     /// 1. Top, bot
     /// 2. A compete set, i. e. (fun x => True)
-    /// 3. Composition of relations, transitive closure, 
+    /// 3. Composition of relations, transitive closure,
     /// reflexive closure, reflexive transitive closure
     /// 4. Union, intersection, setminus
     /// 5. Symbols
@@ -54,7 +53,7 @@ define_language! {
 }
 
 lazy_static! {
-    /// A map from Coq.Relations operator names 
+    /// A map from Coq.Relations operator names
     /// to their representations in RelLanguage
     static ref OPERATORS: HashMap<&'static str, &'static str> = {
         let mut map = HashMap::new();
@@ -78,7 +77,7 @@ lazy_static! {
 
 /// Expression thrown in case of
 /// invalid arguments amount or
-/// invalid operator name given 
+/// invalid operator name given
 #[derive(Debug)]
 pub enum ExprParseError {
     BadOp(FromOpError),
@@ -98,7 +97,7 @@ impl Into<&str> for ExprParseError {
     }
 }
 
-/// Parse S-expression from OCaml into 
+/// Parse S-expression from OCaml into
 /// a RecExpr that is used by Egg
 pub fn expr_to_rellang(sexp: &GoalSExpr) -> Result<RecExpr<RelLanguage>, ExprParseError> {
     fn is_subterm_lambda_to(sexp: &GoalSExpr, to: &str) -> bool {
@@ -128,12 +127,15 @@ pub fn expr_to_rellang(sexp: &GoalSExpr) -> Result<RecExpr<RelLanguage>, ExprPar
         false
     }
 
-    fn parse_sexp_into(sexp: &GoalSExpr, expr: &mut RecExpr<RelLanguage>) -> Result<Id, ExprParseError> {
+    fn parse_sexp_into(
+        sexp: &GoalSExpr,
+        expr: &mut RecExpr<RelLanguage>,
+    ) -> Result<Id, ExprParseError> {
         match sexp {
             GoalSExpr::Symbol(s) => {
                 let node = RelLanguage::Symbol(Symbol::from(s.to_string()));
                 Ok(expr.add(node))
-            },
+            }
 
             GoalSExpr::Application(f, args) => {
                 let op = match OPERATORS.get(f.as_str()) {
@@ -151,11 +153,11 @@ pub fn expr_to_rellang(sexp: &GoalSExpr) -> Result<RecExpr<RelLanguage>, ExprPar
 
                 let node = RelLanguage::from_op(op, arg_ids?).map_err(BadOp)?;
                 Ok(expr.add(node))
-            },
+            }
 
             GoalSExpr::Lambda(_, _) => {
                 // Only check if lambda is a Bot or Top const
-                // (i.e. a (fun _ _ => False)) / (i.e. a (fun _ _ => True)) 
+                // (i.e. a (fun _ _ => False)) / (i.e. a (fun _ _ => True))
                 // otherwise return an error
                 match is_subterm_bot_top(sexp) {
                     Some(true) => Ok(expr.add(RelLanguage::Top)),
@@ -184,7 +186,11 @@ pub fn expr_to_string(expr: &GoalSExpr) -> String {
             format!("({}: {})", s, args_str)
         }
         GoalSExpr::Lambda(tp, body) => {
-            format!("(fun _ : {} => {})", expr_to_string(tp.as_ref()), expr_to_string(body.as_ref()))
+            format!(
+                "(fun _ : {} => {})",
+                expr_to_string(tp.as_ref()),
+                expr_to_string(body.as_ref())
+            )
         }
     }
 }

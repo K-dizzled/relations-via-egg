@@ -1,10 +1,4 @@
-use crate::{
-    RelLanguage,
-    RelRules,
-    ProofSeq,
-    parse_proof,
-    intersect,
-};
+use crate::{intersect, parse_proof, ProofSeq, RelLanguage, RelRules};
 use egg::*;
 use std::path::Path;
 
@@ -23,9 +17,9 @@ impl Into<&str> for ProofError {
 
 pub trait ProofStrategy {
     fn prove_eq(
-        &self, 
-        expr1: &RecExpr<RelLanguage>, 
-        expr2: &RecExpr<RelLanguage>, 
+        &self,
+        expr1: &RecExpr<RelLanguage>,
+        expr2: &RecExpr<RelLanguage>,
         rules: &RelRules,
         debug: bool,
     ) -> Result<ProofSeq, ProofError>;
@@ -53,13 +47,15 @@ fn debug_graph_pdf(egraph: &EGraph<RelLanguage, ()>, expr_str: &str, debug: bool
             // That's needed to add a '-q 1' flag to the dot call.
             // Otherwise, graphviz is constantly printing
             // warnings to stdout.
-            egraph.dot().run_dot(
-                &[<str as AsRef<Path>>::as_ref("-Tpdf"),
+            egraph
+                .dot()
+                .run_dot(&[
+                    <str as AsRef<Path>>::as_ref("-Tpdf"),
                     "-q 1".as_ref(),
                     "-o".as_ref(),
-                    name.as_ref()
-                ]
-            ).unwrap();
+                    name.as_ref(),
+                ])
+                .unwrap();
         }
     }
 }
@@ -72,9 +68,9 @@ fn debug_msg(msg: &str, debug: bool) {
 
 impl ProofStrategy for ProofStrategySBiA {
     fn prove_eq(
-        &self, 
-        expr1: &RecExpr<RelLanguage>, 
-        expr2: &RecExpr<RelLanguage>, 
+        &self,
+        expr1: &RecExpr<RelLanguage>,
+        expr2: &RecExpr<RelLanguage>,
         rules: &RelRules,
         debug: bool,
     ) -> Result<ProofSeq, ProofError> {
@@ -124,7 +120,10 @@ impl ProofStrategy for ProofStrategySearchBoth {
 
             debug_graph_pdf(&runner2.egraph, &expr1.to_string(), debug);
             let mut explanation = runner2.explain_equivalence(&expr2, &expr1);
-            debug_msg(format!("Explanation: {:?}", explanation.to_string()).as_str(), debug);
+            debug_msg(
+                format!("Explanation: {:?}", explanation.to_string()).as_str(),
+                debug,
+            );
             let proof = parse_proof(&mut explanation);
 
             return Ok(ProofSeq::from(proof));
@@ -132,7 +131,10 @@ impl ProofStrategy for ProofStrategySearchBoth {
 
         debug_graph_pdf(&runner1.egraph, &expr1.to_string(), debug);
         let mut explanation = runner1.explain_equivalence(&expr1, &expr2);
-        debug_msg(format!("Explanation: {:?}", explanation.to_string()).as_str(), debug);
+        debug_msg(
+            format!("Explanation: {:?}", explanation.to_string()).as_str(),
+            debug,
+        );
         let proof = parse_proof(&mut explanation);
 
         Ok(ProofSeq::from(proof))
@@ -192,15 +194,15 @@ mod tests {
 
     #[test]
     fn test_prove_eq() {
-        let rules = make_rules();
+        let rules = RewriteRules::default();
         let exprs = vec![
-            ("(* (* r))",                              "(* r)"),
-            ("(;; (;; (* r) (? r)) (? r))",            "(* r)"),
+            ("(* (* r))", "(* r)"),
+            ("(;; (;; (* r) (? r)) (? r))", "(* r)"),
             ("(;; (;; (;; (* r) (? r)) (? r)) (? r))", "(* r)"),
-            ("(+ r)",                                  "(;; r (* r))"),
-            ("(;; (? r) (+ r))",                       "(+ r)"),
-            ("(+ (+ r))",                              "(+ r)"),
-            ("(+ (+ (|| r (+ r))))",                   "(+ (|| r (+ r)))"),
+            ("(+ r)", "(;; r (* r))"),
+            ("(;; (? r) (+ r))", "(+ r)"),
+            ("(+ (+ r))", "(+ r)"),
+            ("(+ (+ (|| r (+ r))))", "(+ (|| r (+ r)))"),
         ];
 
         let mut exprs_vec = vec![];
@@ -210,13 +212,11 @@ mod tests {
             exprs_vec.push((expr1, expr2));
         }
 
-        let strategies: Vec<Box<dyn ProofStrategy>> = vec![
-            Box::new(ProofStrategySearchBoth {}),
-        ];
+        let strategies: Vec<Box<dyn ProofStrategy>> = vec![Box::new(ProofStrategySearchBoth {})];
 
         for strategy in strategies {
             for (expr1, expr2) in exprs_vec.iter() {
-                let proof = strategy.prove_eq(expr1, expr2, &rules, false);
+                let proof = strategy.prove_eq(expr1, expr2, &rules.rules, false);
                 assert!(proof.is_ok());
             }
         }

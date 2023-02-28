@@ -1,13 +1,11 @@
-use std::fs::File;
-use std::path::Path;
-use std::io::{Read, Write, Result};
 use egg::*;
+use std::fs::File;
+use std::io::{Read, Result, Write};
+use std::path::Path;
+use std::result::Result as StdResult;
 
-use crate::{
-    goal_preprocess::*,
-    make_rules::RelRules,
-};
-use serde::{Serialize, Deserialize};
+use crate::{goal_preprocess::*, make_rules::RelRules};
+use serde::{Deserialize, Serialize};
 use std::collections::LinkedList;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -22,7 +20,7 @@ pub fn load_axioms<P: AsRef<Path>>(path: P) -> Axioms {
             }
         }
     }
-    
+
     Axioms(LinkedList::new())
 }
 
@@ -33,11 +31,15 @@ pub fn save_axioms<P: AsRef<Path>>(path: P, axioms: Axioms) -> Result<()> {
     Ok(())
 }
 
-fn rewrite_in_runtime(name: &str, from: &str, to: &str) -> Rewrite<RelLanguage, ()> {
+pub fn rewrite_in_runtime(
+    name: &str,
+    from: &str,
+    to: &str,
+) -> StdResult<Rewrite<RelLanguage, ()>, String> {
     let searcher: Pattern<RelLanguage> = from.parse::<Pattern<RelLanguage>>().unwrap();
     let core_applier: Pattern<RelLanguage> = to.parse::<Pattern<RelLanguage>>().unwrap();
 
-    Rewrite::new(name.to_string(), searcher, core_applier).unwrap()
+    Rewrite::new(name.to_string(), searcher, core_applier)
 }
 
 pub fn extract_rules_from_axioms(axioms: &Axioms) -> Result<RelRules> {
@@ -49,38 +51,43 @@ pub fn extract_rules_from_axioms(axioms: &Axioms) -> Result<RelRules> {
                 continue;
             }
 
-            let expr1 = expr_to_rellang(args.front().unwrap())
-                .unwrap()
-                .to_string();
-
-            let expr2 = expr_to_rellang(args.back().unwrap())
-                .unwrap()
-                .to_string();
+            let expr1 = expr_to_rellang(args.front().unwrap()).unwrap().to_string();
+            let expr2 = expr_to_rellang(args.back().unwrap()).unwrap().to_string();
 
             match f.as_str() {
                 "@inclusion" => {
                     rules.push(rewrite_in_runtime(
                         ax_name.as_str(),
                         expr1.as_str(),
-                        expr2.as_str()
+                        expr2.as_str(),
                     ));
-                },
+                }
                 "@same_relation" => {
                     rules.push(rewrite_in_runtime(
                         ax_name.as_str(),
                         expr1.as_str(),
-                        expr2.as_str()
+                        expr2.as_str(),
                     ));
                     rules.push(rewrite_in_runtime(
                         &format!("{}-rev", ax_name.as_str()),
                         expr2.as_str(),
-                        expr1.as_str()
+                        expr1.as_str(),
                     ));
-                },
-                _ => return Err(std::io::Error::new(std::io::ErrorKind::Other, "Unknown axiom")),
+                }
+                _ => {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        "Unknown axiom",
+                    ))
+                }
             }
         }
     }
+
+    let rules = rules
+        .into_iter()
+        .map(|r| r.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)))
+        .collect::<Result<Vec<_>>>()?;
 
     Ok(rules)
 }

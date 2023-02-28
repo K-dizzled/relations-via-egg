@@ -1,6 +1,6 @@
 use egg::*;
-use std::collections::{HashMap, HashSet};
 use itertools::Itertools;
+use std::collections::{HashMap, HashSet};
 
 // This implementation is taken from
 // https://github.com/remysucre/eggegg

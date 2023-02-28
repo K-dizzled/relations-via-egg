@@ -1,7 +1,7 @@
-use std::collections::LinkedList;
 use egg::{Explanation, FlatTerm, Language, Symbol};
+use std::collections::LinkedList;
 
-/// Direction of Rewrite in the 
+/// Direction of Rewrite in the
 /// proof
 #[derive(Debug, ocaml::IntoValue)]
 pub enum Direction {
@@ -33,14 +33,13 @@ pub struct ProofSeq {
 
 impl ProofSeq {
     pub fn from(rules: LinkedList<Rule>) -> ProofSeq {
-        ProofSeq {
-            rules,
-        }
+        ProofSeq { rules }
     }
 }
 
-pub fn parse_proof<L>(expl: &mut Explanation<L>) -> LinkedList<Rule> where 
-    L: Language, 
+pub fn parse_proof<L>(expl: &mut Explanation<L>) -> LinkedList<Rule>
+where
+    L: Language,
     L: std::fmt::Display,
     L: egg::FromOp,
 {
@@ -55,8 +54,9 @@ pub fn parse_proof<L>(expl: &mut Explanation<L>) -> LinkedList<Rule> where
 /// The FlatTerm is basically an S-expr with some extra
 /// information about the rule that was applied to get
 /// the term. Recursively search for the rewrites
-pub fn ft_to_rule<L>(ft: &FlatTerm<L>) -> Option<Rule> where 
-    L: Language, 
+pub fn ft_to_rule<L>(ft: &FlatTerm<L>) -> Option<Rule>
+where
+    L: Language,
     L: std::fmt::Display,
     L: egg::FromOp,
 {
