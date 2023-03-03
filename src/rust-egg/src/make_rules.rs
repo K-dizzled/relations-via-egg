@@ -1,6 +1,5 @@
 use crate::{axioms::*, rewrite_in_runtime, RelLanguage};
-use egg::Rewrite;
-use lazy_static::lazy_static;
+use egg::{Rewrite, AstSize, RecExpr, CostFunction};
 use std::io::Result;
 use std::result::Result as StdResult;
 
@@ -29,6 +28,7 @@ macro_rules! rewrite {
 }
 
 pub type RelRules = Vec<Rewrite<RelLanguage, ()>>;
+pub type RuleRepr = Vec<(&'static str, &'static str, &'static str, RuleDir)>;
 
 pub struct RewriteRules {
     pub rules: RelRules,
@@ -49,9 +49,9 @@ impl RewriteRules {
         }
     }
 
-    pub fn default() -> Self {
+    pub fn default(from: &RuleRepr) -> Self {
         let mut rules = Self::new();
-        for (name, lhs, rhs, dir) in RULES.iter() {
+        for (name, lhs, rhs, dir) in from.iter() {
             match dir {
                 RuleDir::Forward => {
                     rules.push(rewrite_in_runtime(name, lhs, rhs).unwrap());
@@ -69,9 +69,9 @@ impl RewriteRules {
         rules
     }
 
-    pub fn all_bidirectional() -> Self {
+    pub fn all_bidirectional(from: &RuleRepr) -> Self {
         let mut rules = Self::new();
-        for (name, lhs, rhs, _) in RULES.iter() {
+        for (name, lhs, rhs, _) in from.iter() {
             rules.neat_push(rewrite_in_runtime(name, lhs, rhs));
             rules.neat_push(rewrite_in_runtime(&format!("{}-rev", name), rhs, lhs));
         }
@@ -79,6 +79,22 @@ impl RewriteRules {
         rules
     }
 
+    pub fn all_decreasing(from: &RuleRepr) -> Self {
+        let mut rules = Self::new();
+        for (name, lhs, rhs, _) in from.iter() {
+            let left: RecExpr<RelLanguage> = lhs.parse().unwrap();
+            let right: RecExpr<RelLanguage> = rhs.parse().unwrap();
+
+            if AstSize.cost_rec(&left) > AstSize.cost_rec(&right) {
+                rules.neat_push(rewrite_in_runtime(name, lhs, rhs));
+            } else {
+                rules.neat_push(rewrite_in_runtime(&format!("{}-rev", name), rhs, lhs));
+            }
+        }
+
+        rules
+    }
+ 
     pub fn extend_with_wf(&mut self, path: &'static str) -> Result<()> {
         let axioms = load_axioms(path);
         let axioms_rules = extract_rules_from_axioms(&axioms)?;
@@ -94,84 +110,26 @@ pub enum RuleDir {
     Bidirectional,
 }
 
-lazy_static! {
-    /// Extract hahn COQ library theorems to rewrite
-    /// rules and afterwards build graph using them
-    static ref RULES: Vec<(&'static str, &'static str, &'static str, RuleDir)> = {
-        Vec::from([
-            ("ct_end", "(+ ?a)", "(;; (* ?a) ?a)", RuleDir::Bidirectional),
-            ("ct_begin", "(+ ?a)", "(;; ?a (* ?a))", RuleDir::Bidirectional),
-            ("rt_begin", "(* ?r)", "(|| (complete_set) (;; ?r (* ?r)))", RuleDir::Backward),
-            ("rt_end", "(* ?r)", "(|| (complete_set) (;; (* ?r) ?r))", RuleDir::Backward),
-            ("rt_cr", "(;; (* ?a) (? ?a))", "(* ?a)", RuleDir::Forward),
-            ("seq_false_l", "(;; bot ?a)", "bot", RuleDir::Forward),
-            ("seq_false_r", "(;; ?a bot)", "bot", RuleDir::Forward),
-            ("interC", "(&& ?r1 ?r2)", "(&& ?r2 ?r1)", RuleDir::Forward),
-            ("interK", "(&& ?r ?r)", "?r", RuleDir::Forward),
-            ("inter_false_r", "(&& ?r bot)", "bot", RuleDir::Forward),
-            ("inter_false_l", "(&& bot ?r)", "bot", RuleDir::Forward),
-            ("inter_union_r", "(&& ?r (|| ?r1 ?r2))", "(|| (&& ?r ?r1) (&& ?r ?r2))", RuleDir::Backward),
-            ("inter_union_l", "(&& (|| ?r1 ?r2) ?r)", "(|| (&& ?r1 ?r) (&& ?r2 ?r))", RuleDir::Backward),
-            ("minus_false_r", "(setminus ?r bot)", "?r", RuleDir::Forward),
-            ("minus_false_l", "(setminus bot ?r)", "bot", RuleDir::Forward),
-            ("minusK", "(setminus ?r ?r)", "bot", RuleDir::Forward),
-            ("crE", "(? ?r)", "(|| (complete_set) ?r)", RuleDir::Backward),
-            ("rtE", "(* ?r)", "(|| (complete_set) (+ ?r))", RuleDir::Backward),
-            ("csE", "(clos_sym ?r)", "(|| ?r (-1 ?r))", RuleDir::Backward),
-            ("crsE", "(clos_refl_sym ?r)", "(|| (|| (complete_set) ?r) (-1 ?r))", RuleDir::Backward),
-            ("crsEE", "(clos_refl_sym ?r)", "(|| (complete_set) (clos_sym ?r))", RuleDir::Backward),
-            ("ct_rt", "(;; (+ ?a) (* ?a))", "(+ ?a)", RuleDir::Forward),
-            ("rt_ct", "(;; (* ?a) (+ ?a))", "(+ ?a)", RuleDir::Forward),
-            ("cr_ct", "(;; (? ?r) (+ ?r))", "(+ ?r)", RuleDir::Forward),
-            ("ct_cr", "(;; (+ ?r) (? ?r))", "(+ ?r)", RuleDir::Forward),
-            ("rt_rt", "(;; (* ?r) (* ?r))", "(* ?r)", RuleDir::Forward),
-            ("cr_of_ct", "(? (+ ?r))", "(* ?r)", RuleDir::Forward),
-            ("cr_of_cr", "(? (? ?r))", "(? ?r)", RuleDir::Forward),
-            ("cr_of_rt", "(? (* ?r))", "(* ?r)", RuleDir::Forward),
-            ("ct_of_ct", "(+ (+ ?r))", "(+ ?r)", RuleDir::Forward),
-            ("ct_of_union_ct_l", "(+ (|| (+ ?r) ?r'))", "(+ (|| ?r ?r'))", RuleDir::Forward),
-            ("ct_of_union_ct_r", "(+ (|| ?r (+ ?r')))", "(+ (|| ?r ?r'))", RuleDir::Forward),
-            ("ct_of_cr", "(+ (? ?r))", "(* ?r)", RuleDir::Forward),
-            ("ct_of_rt", "(+ (* ?r))", "(* ?r)", RuleDir::Forward),
-            ("rt_of_ct", "(* (+ ?r))", "(* ?r)", RuleDir::Forward),
-            ("rt_of_cr", "(* (? ?r))", "(* ?r)", RuleDir::Forward),
-            ("rt_of_rt", "(* (* ?r))", "(* ?r)", RuleDir::Forward),
-            ("cr_union_l", "(? (|| ?r ?r'))", "(|| (? ?r) ?r')", RuleDir::Forward),
-            ("cr_union_r", "(? (|| ?r ?r'))", "(|| ?r (? ?r'))", RuleDir::Forward),
-            ("cs_union", "(clos_sym (|| ?r ?r'))", "(|| (clos_sym ?r) (clos_sym ?r'))", RuleDir::Forward),
-            ("crs_union", "(clos_refl_sym (|| ?r ?r'))", "(|| (clos_refl_sym ?r) (clos_refl_sym ?r'))", RuleDir::Forward),
-            ("seq_id_l", "(;; complete_set ?a)", "?a", RuleDir::Forward),
-            ("seq_id_r", "(;; ?a complete_set)", "?a", RuleDir::Forward),
-            ("unionC", "(|| ?r1 ?r2)", "(|| ?r2 ?r1)", RuleDir::Forward),
-            ("unionK", "(|| ?r ?r)", "?r", RuleDir::Forward),
-            ("union_false_r", "(|| ?r bot)", "?r", RuleDir::Forward),
-            ("union_false_l", "(|| bot ?r)", "?r", RuleDir::Forward),
-            ("cr_seq", "(;; (? ?r) ?r')", "(|| ?r' (;; ?r ?r'))", RuleDir::Backward),
-            ("ct_seq_swap", "(;; (+ (;; ?r ?r')) ?r)", "(;; ?r (+ (;; ?r' ?r)))", RuleDir::Forward),
-        ])
-    };
-}
-
 #[cfg(test)]
 mod tests {
     use crate::*;
 
     #[test]
     fn test_default_rules() {
-        let rules = RewriteRules::default();
+        let rules = RewriteRules::default(&RULES);
         assert_eq!(rules.rules.len(), 51);
     }
 
     #[test]
     fn test_bidi() {
-        let rules = RewriteRules::all_bidirectional();
+        let rules = RewriteRules::all_bidirectional(&RULES);
         assert_eq!(rules.rules.len(), 92);
     }
 
     #[test]
     fn test_build_egraph_default() {
         let expr = "(;; (+ ?a) (* ?a))".parse().unwrap();
-        let rules = RewriteRules::default();
+        let rules = RewriteRules::default(&RULES);
         let _runner = Runner::default()
             .with_explanations_enabled()
             .with_expr(&expr)
@@ -181,10 +139,30 @@ mod tests {
     #[test]
     fn test_build_egraph_bidi() {
         let expr = "(;; (+ ?a) (* ?a))".parse().unwrap();
-        let rules = RewriteRules::all_bidirectional();
+        let rules = RewriteRules::all_bidirectional(&RULES);
         let _runner = Runner::default()
             .with_explanations_enabled()
             .with_expr(&expr)
             .run(&rules.rules);
+    }
+
+    #[test]
+    fn test_cost_fn() {
+        let rules: RuleRepr = vec![
+            ("a", "(;; ?a ?b)", "(;; ?b ?a)", RuleDir::Forward),
+            ("b", "(&& ?a ?b)", "(|| ?b ?a)", RuleDir::Backward),
+            ("c", "(? (? ?a))", "(? ?a)", RuleDir::Forward),
+            ("c1", "(* (* ?a))", "(* ?a)", RuleDir::Forward),
+            ("c", "(+ (+ ?a))", "(+ ?a)", RuleDir::Forward),
+            ("union_false_r", "(|| ?r bot)", "?r", RuleDir::Forward),
+            ("union_false_l", "(|| bot ?r)", "?r", RuleDir::Forward),
+        ];
+
+        let rules = RewriteRules::all_decreasing(&rules);
+        assert_eq!(rules.rules.len(), 7);
+
+        assert!(AstSize.cost_fn(&"(;; ?a ?b)".parse().unwrap()) > AstSize.cost_fn(&"?b".parse().unwrap()));
+        assert!(AstSize.cost_fn(&"(;; ?a ?b)".parse().unwrap()) > AstSize.cost_fn(&"?a".parse().unwrap()));
+        assert!(AstSize.cost_fn(&"(? ?b)".parse().unwrap()) > AstSize.cost_fn(&"(?b)".parse().unwrap()));
     }
 }

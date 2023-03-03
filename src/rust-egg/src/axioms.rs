@@ -4,7 +4,7 @@ use std::io::{Read, Result, Write};
 use std::path::Path;
 use std::result::Result as StdResult;
 
-use crate::{goal_preprocess::*, make_rules::RelRules};
+use crate::{goal_preprocess::*, make_rules::RelRules, WF_FILE};
 use serde::{Deserialize, Serialize};
 use std::collections::LinkedList;
 
@@ -93,7 +93,7 @@ pub fn extract_rules_from_axioms(axioms: &Axioms) -> Result<RelRules> {
 }
 
 pub fn extend_rules_w_axioms(wf: &mut RelRules) -> Result<()> {
-    let axioms = load_axioms("axioms.json");
+    let axioms = load_axioms(&*WF_FILE);
     let axioms_rules = extract_rules_from_axioms(&axioms)?;
     wf.extend(axioms_rules);
     Ok(())

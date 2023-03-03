@@ -2,7 +2,7 @@ use egg::*;
 
 use crate::{
     axioms::*, egraph_intersect::intersect, goal_preprocess::*, make_rules::*, proof_sequence::*,
-    proof_strategy::*,
+    proof_strategy::*, config::*,
 };
 
 use std::collections::LinkedList;
@@ -10,7 +10,7 @@ use std::collections::LinkedList;
 #[ocaml::func]
 pub fn rust_configure_egg(axioms: LinkedList<(GoalSExpr, String)>) -> Result<(), ocaml::Error> {
     let ax = Axioms(axioms);
-    let res = save_axioms("axioms.json", ax);
+    let res = save_axioms(&*WF_FILE, ax);
     if let Err(_error) = res {
         return Err(ocaml::Error::Message("Unable to save Record"));
     }
@@ -47,15 +47,9 @@ pub fn rust_prove_eq(
         return Err(ocaml::Error::Message(message));
     }
     let rl1 = rl1.unwrap(); let rl2 = rl2.unwrap();
-    let mut rules = RewriteRules::default();
-    let res = rules.extend_with_wf("axioms.json");
-
-    if let Err(_error) = res {
-        return Err(ocaml::Error::Message("Unable to load axioms"));
-    }
 
     let proof_strategy = ProofStrategySearchBoth {};
-    let proof = proof_strategy.prove_eq(&rl1, &rl2, &rules.rules, debug);
+    let proof = proof_strategy.prove_eq(&rl1, &rl2, &RULES, debug);
     if let Err(error) = proof {
         let message = error.into();
         return Err(ocaml::Error::Message(message));
@@ -68,7 +62,7 @@ pub fn rust_prove_eq(
 /// element, then extract the sequence of rules
 /// to explain equivalence.
 fn get_simplification_proof(expr: &RecExpr<RelLanguage>) -> ProofSeq {
-    let rules = RewriteRules::default();
+    let rules = RewriteRules::default(&RULES);
     let mut runner = Runner::default()
         .with_explanations_enabled()
         .with_expr(&expr)
@@ -91,3 +85,4 @@ pub mod goal_preprocess;
 pub mod make_rules;
 pub mod proof_sequence;
 pub mod proof_strategy;
+pub mod config;
