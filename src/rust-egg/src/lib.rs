@@ -48,7 +48,7 @@ pub fn rust_prove_eq(
     }
     let rl1 = rl1.unwrap(); let rl2 = rl2.unwrap();
 
-    let proof_strategy = ProofStrategySearchBoth {};
+    let proof_strategy = ProofStrategyAllBidi {};
     let proof = proof_strategy.prove_eq(&rl1, &rl2, &RULES, debug);
     if let Err(error) = proof {
         let message = error.into();
@@ -67,7 +67,8 @@ fn get_simplification_proof(expr: &RecExpr<RelLanguage>) -> ProofSeq {
         .with_explanations_enabled()
         .with_expr(&expr)
         .run(&rules.rules);
-
+    
+    debug_graph_pdf(&runner.egraph, &expr.to_string(), true);
     let root = runner.roots[0];
 
     let extractor = Extractor::new(&runner.egraph, AstSize);

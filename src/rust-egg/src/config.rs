@@ -59,6 +59,8 @@ lazy_static! {
             ("union_false_l", "(|| bot ?r)", "?r", RuleDir::Forward),
             ("cr_seq", "(;; (? ?r) ?r')", "(|| ?r' (;; ?r ?r'))", RuleDir::Backward),
             ("ct_seq_swap", "(;; (+ (;; ?r ?r')) ?r)", "(;; ?r (+ (;; ?r' ?r)))", RuleDir::Forward),
+            ("seq_union_l", "(;; (|| ?r1 ?r2) ?r)", "(|| (;; ?r1 ?r) (;; ?r2 ?r))", RuleDir::Forward),
+            ("seq_union_r", "(;; ?r (|| ?r1 ?r2))", "(|| (;; ?r ?r1) (;; ?r ?r2))", RuleDir::Forward)
         ])
     };
 }

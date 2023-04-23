@@ -51,7 +51,7 @@ pub struct ProofStrategySearchIntersect {}
 // Build an e-graph for the lhs and search it for the rhs.
 pub struct ProofStrategyAllBidi {}
 
-fn debug_graph_pdf(egraph: &EGraph<RelLanguage, ()>, expr_str: &str, debug: bool) {
+pub fn debug_graph_pdf(egraph: &EGraph<RelLanguage, ()>, expr_str: &str, debug: bool) {
     if debug {
         std::fs::create_dir_all("egraphs").unwrap();
         let filename = "egraphs/".to_string() + &expr_str + ".pdf";
@@ -229,7 +229,7 @@ impl ProofStrategy for ProofStrategyAllBidi {
 
         let mut runner = Runner::default()
             .with_explanations_enabled()
-            .with_node_limit(100)
+            .with_node_limit(1000)
             .with_expr(&expr1)
             .run(&rules.rules);
 

@@ -42,6 +42,7 @@ let multiple_rewrites_tac (sequence : Parse_goal.proof_seq) =
   let proof_seq = List.fold_left (fun tac (rule : Parse_goal.rule) -> 
     let thr = rule.theorem in 
     let dir = rule.direction in 
+    let _ = debug ("rewrite " ^ (Parse_goal.rule_to_string rule)) in 
 
     let rewrite_tac = 
       try 
@@ -50,7 +51,8 @@ let multiple_rewrites_tac (sequence : Parse_goal.proof_seq) =
         CErrors.user_err (str msg) in
 
     let tac = Proofview.tclTHEN tac rewrite_tac in
-    tac
+    let tac_with_auto = Proofview.tclTHEN tac (Auto.default_auto) in
+    tac_with_auto
   ) (Tacticals.tclIDTAC) sequence.seq in
   proof_seq 
 
