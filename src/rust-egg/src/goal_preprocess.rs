@@ -1,14 +1,15 @@
 use crate::ExprParseError::BadOp;
 use egg::{define_language, FromOp, FromOpError, Id, RecExpr, Symbol};
 use lazy_static::lazy_static;
-use ocaml::Value;
+use ocaml::{Runtime, Value};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, LinkedList};
+use egg::Language;
 
 /// Goal is received from OCaml
 /// as a simple s-expression
 /// consisting of applications.
-#[derive(ocaml::FromValue, Serialize, Deserialize, PartialEq, Debug)]
+#[derive(ocaml::FromValue, Serialize, Deserialize, PartialEq, Debug, ocaml::IntoValue)]
 pub enum GoalSExpr {
     Symbol(String),
     Application(String, LinkedList<GoalSExpr>),
@@ -18,6 +19,12 @@ pub enum GoalSExpr {
 unsafe impl ocaml::FromValue<'_> for Box<GoalSExpr> {
     fn from_value(v: Value) -> Self {
         Box::new(ocaml::FromValue::from_value(v))
+    }
+}
+
+unsafe impl ocaml::IntoValue for Box<GoalSExpr> {
+    fn into_value(self, rt: &Runtime) -> Value {
+        ocaml::IntoValue::into_value(*self, rt)
     }
 }
 
@@ -71,6 +78,22 @@ lazy_static! {
         map
     };
 
+    static ref OPERATORS_REVERSE: HashMap<&'static str, &'static str> = {
+        let mut map = HashMap::new();
+        map.insert(";;", "seq");
+        map.insert("*", "clos_refl_trans");
+        map.insert("?", "clos_refl");
+        map.insert("+", "clos_trans");
+        map.insert("||", "union");
+        map.insert("setminus", "minus_rel");
+        map.insert("&&", "inter_rel");
+        map.insert("eqv_rel", "eqv_rel");
+        map.insert("clos_sym", "clos_sym");
+        map.insert("-1", "transp");
+        map.insert("clos_refl_sym", "clos_refl_sym");
+        map
+    };
+
     static ref COQ_TRUE: String = "Coq.Init.Logic.True".to_string();
     static ref COQ_FALSE: String = "Coq.Init.Logic.False".to_string();
 }
@@ -84,6 +107,7 @@ pub enum ExprParseError {
     UnexpectedLambdaUse,
     WFParsingError,
     SexpParsingError,
+    RecExprParsingError,
 }
 
 impl Into<&str> for ExprParseError {
@@ -93,8 +117,42 @@ impl Into<&str> for ExprParseError {
             ExprParseError::UnexpectedLambdaUse => "Lambda used in an unexpected place.",
             ExprParseError::WFParsingError => "Error parsing wf.",
             ExprParseError::SexpParsingError => "Error parsing s-expression.",
+            ExprParseError::RecExprParsingError => "Error parsing rec-expression into goal expr.",
         }
     }
+}
+
+pub fn recexpr_to_goal_expr(expr: &RecExpr<RelLanguage>) -> Result<GoalSExpr, ExprParseError> {
+    fn to_sexp_rec(
+        i: usize,
+        nodes: &[RelLanguage]
+    ) -> Result<GoalSExpr, ExprParseError> {
+        let node = &nodes[i];
+        if node.is_leaf() {
+            Ok(GoalSExpr::Symbol(node.to_string()))
+        } else {
+            let op = OPERATORS_REVERSE.get(node.to_string().as_str())
+                .ok_or(ExprParseError::RecExprParsingError)?
+                .to_string();
+
+            let mut vec: LinkedList<GoalSExpr> = LinkedList::new();
+
+            for child_id in node.children().iter().map(|i| usize::from(*i)) {
+                let child = &nodes[child_id];
+                if child.is_leaf() {
+                    vec.push_back(GoalSExpr::Symbol(child.to_string()));
+                } else {
+                    let child = to_sexp_rec(child_id, nodes)?;
+                    vec.push_back(child);
+                }
+            }
+            Ok(GoalSExpr::Application(op, vec))
+        }
+    }
+
+    let nodes = expr.as_ref();
+    let last = nodes.len() - 1;
+    return to_sexp_rec(last, nodes);
 }
 
 /// Parse S-expression from OCaml into

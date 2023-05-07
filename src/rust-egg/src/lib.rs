@@ -75,7 +75,7 @@ fn get_simplification_proof(expr: &RecExpr<RelLanguage>) -> ProofSeq {
     let (_best_cost, best) = extractor.find_best(root);
 
     let mut explanation = runner.explain_equivalence(&expr, &best);
-    let proof = parse_proof(&mut explanation);
+    let proof = parse_proof(&mut explanation, &rules);
 
     ProofSeq::from(proof)
 }

@@ -13,7 +13,9 @@ type direction =
 
 type rule = 
   { direction : direction;
-    theorem : string; }
+    theorem : string;
+    rewrite_with : (string * goal_s_expr) list;
+    rewrite_at : int; }
 
 type proof_seq = { seq : rule list; } [@@boxed]
 
@@ -57,15 +59,6 @@ let split_goal expr =
         raise (Goal_parse_exp "Goal must be of form a ⊆ b.")
   | _ -> raise (Goal_parse_exp "Invalid term passed.")
 
-(* Utility functions *)
-let rule_to_string rule = 
-  let dir = 
-    match rule.direction with
-    | Forward -> "forward"
-    | Backward -> "backward"
-  in
-  "(" ^ dir ^ " " ^ rule.theorem ^ ")"
-
 let rec s_expr_to_string expr = 
   match expr with
   | Symbol s -> s
@@ -79,3 +72,16 @@ let rec s_expr_to_string expr =
     let var_str = s_expr_to_string var in
     let body_str = s_expr_to_string body in
     "(λ _: " ^ var_str ^ " => " ^ body_str ^ ")"
+
+(* Utility functions *)
+let rule_to_string rule = 
+  let substs = 
+    List.map (fun (a, b) -> a ^ " |-> " ^ (s_expr_to_string b)) rule.rewrite_with
+    |> String.concat ", "
+  in 
+  let dir = 
+    match rule.direction with
+    | Forward -> "->"
+    | Backward -> "<-"
+  in
+  "(rewrite " ^ dir ^ " " ^ rule.theorem ^ " with " ^ substs ^ " at " ^ (string_of_int rule.rewrite_at) ^ ")"

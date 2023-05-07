@@ -247,6 +247,7 @@ dependencies = [
  "ocaml",
  "serde",
  "serde_json",
+ "symbolic_expressions",
 ]
 
 [[package]]

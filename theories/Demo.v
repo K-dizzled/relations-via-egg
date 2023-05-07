@@ -5,8 +5,14 @@ Section Example.
 
 Variable A : Type.
 
-Lemma test1 (r : relation A): 
-  ((r^?)^?)^+ ≡ (r^?)^*.
+Lemma test_with1 (r : relation A): 
+  (r^?)^+ ;; ((r^?)^?)^+ ≡ (r^?)^+ ;; (r^?)^*.
+Proof.
+  Cegg solve eq. 
+Qed.
+
+Lemma test_with2 (r : relation A): 
+  ((r^*)^?)^+ ;; ((r^?)^?)^+ ≡ (r^*)^* ;; (r^?)^*.
 Proof.
   Cegg solve eq. 
 Qed.
@@ -14,6 +20,7 @@ Qed.
 Lemma lol (r r' : relation A):
   ((((r^?)^+ ;; r^?) ;; (r^?)^+)^?)^+ ;; ((r^?)^?)^+ ≡ (((r^?)^+ ;; r^?) ;; r^*)^*.
 Proof.
+  (* Cegg solve eq. *)
   (* What type of (r^?). *)
   (* rewrite (ct_of_cr r) at 1. *)
   (* rewrite -> ct_of_cr at 1. *)

@@ -14,7 +14,9 @@ type direction =
 
 type rule = 
   { direction : direction;
-    theorem : string; }
+    theorem : string;
+    rewrite_with : (string * goal_s_expr) list;
+    rewrite_at : int; }
 
 type proof_seq = { seq : rule list; } [@@boxed]
 

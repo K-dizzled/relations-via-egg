@@ -105,7 +105,7 @@ impl ProofStrategy for ProofStrategySBiA {
         }
 
         let mut explanation = runner.explain_equivalence(&expr1, &expr2);
-        let proof = parse_proof(&mut explanation);
+        let proof = parse_proof(&mut explanation, &rules);
 
         Ok(ProofSeq::from(proof))
     }
@@ -146,7 +146,7 @@ impl ProofStrategy for ProofStrategySearchBoth {
                 format!("Explanation: {:?}", explanation.to_string()).as_str(),
                 debug,
             );
-            let proof = parse_proof(&mut explanation);
+            let proof = parse_proof(&mut explanation, &rules);
 
             return Ok(ProofSeq::from(proof));
         }
@@ -157,7 +157,7 @@ impl ProofStrategy for ProofStrategySearchBoth {
             format!("Explanation: {:?}", explanation.to_string()).as_str(),
             debug,
         );
-        let proof = parse_proof(&mut explanation);
+        let proof = parse_proof(&mut explanation, &rules);
 
         Ok(ProofSeq::from(proof))
     }
@@ -203,10 +203,10 @@ impl ProofStrategy for ProofStrategySearchIntersect {
         let (_best_cost, best) = extractor.find_best(root);
 
         let mut explanation_left_to_mid = runner.explain_equivalence(&expr1, &best);
-        let mut proof = parse_proof(&mut explanation_left_to_mid);
+        let mut proof = parse_proof(&mut explanation_left_to_mid, &rules);
 
         let mut explanation_mid_to_right = runner.explain_equivalence(&best, &expr2);
-        let mut proof2 = parse_proof(&mut explanation_mid_to_right);
+        let mut proof2 = parse_proof(&mut explanation_mid_to_right, &rules);
 
         proof.append(&mut proof2);
 
@@ -241,7 +241,7 @@ impl ProofStrategy for ProofStrategyAllBidi {
         }
 
         let mut explanation = runner.explain_equivalence(&expr1, &expr2);
-        let proof = parse_proof(&mut explanation);
+        let proof = parse_proof(&mut explanation, &rules);
 
         Ok(ProofSeq::from(proof))
     }

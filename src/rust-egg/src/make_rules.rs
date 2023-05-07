@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::{axioms::*, rewrite_in_runtime, RelLanguage};
 use egg::{Rewrite, AstSize, RecExpr, CostFunction};
 use std::io::Result;
@@ -32,19 +33,26 @@ pub type RuleRepr = Vec<(&'static str, &'static str, &'static str, RuleDir)>;
 
 pub struct RewriteRules {
     pub rules: RelRules,
+    pub rules_dict: HashMap<String, Rewrite<RelLanguage, ()>>
 }
 
 impl RewriteRules {
     pub fn new() -> Self {
-        Self { rules: vec![] }
+        Self { rules: vec![], rules_dict: HashMap::new() }
+    }
+
+    pub fn get_rule_by_name(&self, name: &str) -> Option<&Rewrite<RelLanguage, ()>> {
+        self.rules_dict.get(name)
     }
 
     pub fn push(&mut self, rule: Rewrite<RelLanguage, ()>) {
+        self.rules_dict.insert(rule.name.as_str().to_string(), rule.clone());
         self.rules.push(rule);
     }
 
     pub fn neat_push(&mut self, rule: StdResult<Rewrite<RelLanguage, ()>, String>) {
         if let Ok(rule) = rule {
+            self.rules_dict.insert(rule.name.as_str().to_string(), rule.clone());
             self.rules.push(rule);
         }
     }
@@ -98,7 +106,11 @@ impl RewriteRules {
     pub fn extend_with_wf(&mut self, path: &'static str) -> Result<()> {
         let axioms = load_axioms(path);
         let axioms_rules = extract_rules_from_axioms(&axioms)?;
+        axioms_rules.iter().for_each(|rule| {
+            self.rules_dict.insert(rule.name.as_str().to_string(), rule.clone());
+        });
         self.rules.extend(axioms_rules);
+
         Ok(())
     }
 }

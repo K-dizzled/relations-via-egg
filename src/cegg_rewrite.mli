@@ -12,5 +12,6 @@ val rewrite :
 val rewrite_with : 
   string -> 
   Parse_goal.direction -> 
-  Constr.t -> 
+  Constr.t array -> 
+  int -> 
   unit Proofview.tactic

@@ -42,11 +42,16 @@ let multiple_rewrites_tac (sequence : Parse_goal.proof_seq) =
   let proof_seq = List.fold_left (fun tac (rule : Parse_goal.rule) -> 
     let thr = rule.theorem in 
     let dir = rule.direction in 
+    let with_exprs = rule.rewrite_with in
+    let at_occur = rule.rewrite_at in
+    let with_constr = 
+      List.map (fun (name, subst) -> Parse_record.sexp_to_constr subst) with_exprs in
+    let with_constr_array = Array.of_list with_constr in
     let _ = debug ("rewrite " ^ (Parse_goal.rule_to_string rule)) in 
 
     let rewrite_tac = 
       try 
-        Cegg_rewrite.rewrite thr dir 
+        Cegg_rewrite.rewrite_with thr dir with_constr_array at_occur
       with Cegg_rewrite.Rewriting_exp msg -> 
         CErrors.user_err (str msg) in
 
@@ -101,20 +106,6 @@ let try_prove () =
       let _ = debug ("") in
 
       tac
-  )
-
-let kek_tac () = 
-  Proofview.Goal.enter (fun goal -> 
-    let env = Proofview.Goal.env goal in
-    let sigma = Proofview.Goal.sigma goal in
-    let concl = Proofview.Goal.concl goal in
-  
-    let _ = debug ("In kek: " ^ (C_utilities.term_to_str env concl sigma)) in
-    let _ = debug ("In kek: " ^ (C_utilities.term_kind_to_str env concl sigma)) in
-    let with_constr = Parse_record.sexp_to_constr (Parse_goal.Application ("clos_refl", [Parse_goal.Symbol "r"])) in 
-    let tac = Cegg_rewrite.rewrite_with "ct_of_cr" Parse_goal.Forward with_constr in
-
-    tac
   )
 
 let print_type c = 
