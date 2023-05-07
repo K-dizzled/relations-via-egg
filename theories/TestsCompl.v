@@ -7,7 +7,7 @@ Variable A : Type.
 
 Lemma test_1 (r : relation A) :
     (r^+)^* ≡ r^* ;; (r ;; r^*)^?.
-Proof. Cegg solve. Admitted.
+Proof. Admitted.
 
 (* Lemma test (r r' : relation A) :
  ((r ∪ r^+)^+)^+ ≡ (r ∪ r^+)^+.

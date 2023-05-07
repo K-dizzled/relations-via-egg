@@ -103,6 +103,29 @@ let try_prove () =
       tac
   )
 
+let kek_tac () = 
+  Proofview.Goal.enter (fun goal -> 
+    let env = Proofview.Goal.env goal in
+    let sigma = Proofview.Goal.sigma goal in
+    let concl = Proofview.Goal.concl goal in
+  
+    let _ = debug ("In kek: " ^ (C_utilities.term_to_str env concl sigma)) in
+    let _ = debug ("In kek: " ^ (C_utilities.term_kind_to_str env concl sigma)) in
+    let with_constr = Parse_record.sexp_to_constr (Parse_goal.Application ("clos_refl", [Parse_goal.Symbol "r"])) in 
+    let tac = Cegg_rewrite.rewrite_with "ct_of_cr" Parse_goal.Forward with_constr in
+
+    tac
+  )
+
+let print_type c = 
+  Proofview.Goal.enter (fun goal -> 
+    let env = Proofview.Goal.env goal in
+    let sigma = Proofview.Goal.sigma goal in
+    let _ = Feedback.msg_notice (Pp.str  (C_utilities.term_kind_to_str env c sigma)) in
+
+    Tacticals.tclIDTAC
+  )
+
 let config_egg ref = 
   let env = Global.env () in
      let sigma = Evd.from_env env in

@@ -17,3 +17,11 @@ END
 TACTIC EXTEND cegg_solve_eq
 | [ "Cegg" "solve" "eq" ] -> { time_tac "Try show eq" (try_prove ()) }
 END
+
+TACTIC EXTEND kek_tactic
+| [ "kek" ] -> { kek_tac () }
+END
+
+TACTIC EXTEND print_type
+| [ "What" "type" "of" constr(c) ] -> { print_type c }
+END

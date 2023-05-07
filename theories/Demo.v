@@ -5,7 +5,24 @@ Section Example.
 
 Variable A : Type.
 
-Search (?X ;; ?Y ≡ ?X).
+Lemma test1 (r : relation A): 
+  ((r^?)^?)^+ ≡ (r^?)^*.
+Proof.
+  Cegg solve eq. 
+Qed.
+
+Lemma lol (r r' : relation A):
+  ((((r^?)^+ ;; r^?) ;; (r^?)^+)^?)^+ ;; ((r^?)^?)^+ ≡ (((r^?)^+ ;; r^?) ;; r^*)^*.
+Proof.
+  (* What type of (r^?). *)
+  (* rewrite (ct_of_cr r) at 1. *)
+  (* rewrite -> ct_of_cr at 1. *)
+
+  (* rewrite ct_of_cr at 1. *)
+  (* rewrite (ct_of_cr (((r^?)^+ ;; r^?) ;; (r^?)^+)) at 1. *)
+  (* reflexivity. *)
+Admitted.
+
 
 Variable rf : A -> A -> Prop.
 Variable mo : A -> A -> Prop.
@@ -31,16 +48,16 @@ Implicit Type WF : Wf.
 Lemma kek WF (r : relation A):
   (fr ∪ mo) ;; (fr ∪ mo) ≡ fr ;; mo ∪ mo ;; mo.
 Proof.
-  (* rewrite -> seq_union_r.
+  rewrite -> seq_union_r.
   rewrite -> seq_union_l.
   rewrite -> fr_fr.
   rewrite -> mo_fr.
   rewrite -> union_false_l.
   rewrite -> union_false_l.
   rewrite -> seq_union_l.
-  all: auto. *)
+  all: auto.
 
-  Cegg solve eq.
+  (* Cegg solve eq. *)
 Qed.
 
 End Example.

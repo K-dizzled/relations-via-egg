@@ -1,8 +1,14 @@
+open Parse_goal
+
 exception Record_parse_exp of string
 
 val access_record_body : 
   Names.GlobRef.t -> 
   EConstr.t
+
+val sexp_to_constr : 
+  goal_s_expr -> 
+  Constr.t
 
 val unpack_prod : 
   Environ.env -> 

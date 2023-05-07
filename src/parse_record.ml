@@ -1,3 +1,5 @@
+open Parse_goal
+
 exception Record_parse_exp of string
 
 let access_record_body gref =
@@ -22,3 +24,15 @@ let rec unpack_prod env prod sigma =
     else
       [(typ, costructor_name)]
   | _ -> raise (Record_parse_exp "Expected a product")
+
+let rec sexp_to_constr sexp =
+  match sexp with
+  | Symbol s -> Constr.mkVar (Names.Id.of_string s)
+  | Application (s, args) -> 
+    let econstr_args = List.map sexp_to_constr args in
+    let f_constr = Cegg_rewrite.get_thr_constr s in 
+    let first_arg_constr = Constr.mkVar (Names.Id.of_string "A") in 
+    let econstr_args = first_arg_constr :: econstr_args in
+    
+    Constr.mkApp (f_constr, Array.of_list econstr_args)
+  | _ -> raise (Record_parse_exp "Expected a symbol or application")

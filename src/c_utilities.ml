@@ -6,7 +6,7 @@ let term_to_str env trm sigma =
 let rec term_kind_to_str env trm sigma = 
   match EConstr.kind sigma trm with
   | Rel _ -> "App"
-  | Var _ -> "Var"
+  | Var name -> "Var " ^ (Names.Id.to_string name)
   | Meta _ -> "Lambda"
   | Evar _ -> "Evar"
   | Sort _ -> "Sort"
@@ -28,10 +28,11 @@ let rec term_kind_to_str env trm sigma =
   | LetIn _ -> "LetIn"
   | App (f, args) -> 
     let f_name = term_to_str env f sigma in
+    let f_type = term_kind_to_str env f sigma in
     let args_str = Array.fold_left (fun acc arg -> 
-      acc ^ " " ^ (term_to_str env arg sigma)) "" args in
-    "App " ^ f_name ^ " with args: " ^ args_str
-  | Const _ -> "Const"
+      acc ^ " " ^ (term_kind_to_str env arg sigma)) "" args in
+    "App " ^ f_name ^ " with type " ^ f_type ^ " and args: (" ^ args_str ^ ")"
+  | Const (name) -> "Const"
   | Ind _ -> "Ind"
   | Construct _ -> "Construct"
   | Case _ -> "Case"

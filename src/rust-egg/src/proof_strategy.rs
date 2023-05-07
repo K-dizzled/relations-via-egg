@@ -253,7 +253,6 @@ mod tests {
 
     #[test]
     fn test_prove_eq() {
-        let rules = RewriteRules::default(&RULES);
         let exprs = vec![
             ("(* (* r))", "(* r)"),
             ("(;; (;; (* r) (? r)) (? r))", "(* r)"),

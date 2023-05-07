@@ -17,6 +17,10 @@ let get_thr_econstr (thr : string) =
   let (gr : Names.GlobRef.t) = get_thr_ref thr in 
   get_efresh gr 
 
+let get_thr_constr (thr : string) = 
+  let (gr : Names.GlobRef.t) = get_thr_ref thr in 
+  _get_fresh gr
+
 let general_rewrite (constr : EConstr.constr) (l2r : bool) =   
   Equality.general_rewrite ~where:None
     ~l2r:l2r
@@ -33,3 +37,14 @@ let rewrite (thr : string) (dir : Parse_goal.direction) =
     | Parse_goal.Backward -> false
   in
   general_rewrite constr l2r
+
+let rewrite_with (thr : string) (dir : Parse_goal.direction) (with_constr : Constr.t) =
+  let constr = get_thr_constr thr in
+  let first_arg_constr = Constr.mkVar (Names.Id.of_string "A") in 
+  let constr = Constr.mkApp (constr, [|first_arg_constr; with_constr|]) in
+
+  let l2r = match dir with
+    | Parse_goal.Forward -> true
+    | Parse_goal.Backward -> false
+  in
+  general_rewrite (EConstr.of_constr constr) l2r

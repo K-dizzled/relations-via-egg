@@ -14,3 +14,11 @@ val try_prove :
 val config_egg : 
   Libnames.qualid -> 
   unit
+
+val kek_tac : 
+  unit -> 
+  unit Proofview.tactic
+
+val print_type : 
+  EConstr.t -> 
+  unit Proofview.tactic

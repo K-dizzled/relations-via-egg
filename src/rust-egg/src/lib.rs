@@ -48,7 +48,7 @@ pub fn rust_prove_eq(
     }
     let rl1 = rl1.unwrap(); let rl2 = rl2.unwrap();
 
-    let proof_strategy = ProofStrategyAllBidi {};
+    let proof_strategy = ProofStrategySearchBoth {};
     let proof = proof_strategy.prove_eq(&rl1, &rl2, &RULES, debug);
     if let Err(error) = proof {
         let message = error.into();

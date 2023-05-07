@@ -117,13 +117,13 @@ mod tests {
     #[test]
     fn test_default_rules() {
         let rules = RewriteRules::default(&RULES);
-        assert_eq!(rules.rules.len(), 51);
+        assert_eq!(rules.rules.len(), 53);
     }
 
     #[test]
     fn test_bidi() {
         let rules = RewriteRules::all_bidirectional(&RULES);
-        assert_eq!(rules.rules.len(), 92);
+        assert_eq!(rules.rules.len(), 96);
     }
 
     #[test]
@@ -161,8 +161,11 @@ mod tests {
         let rules = RewriteRules::all_decreasing(&rules);
         assert_eq!(rules.rules.len(), 7);
 
-        assert!(AstSize.cost_fn(&"(;; ?a ?b)".parse().unwrap()) > AstSize.cost_fn(&"?b".parse().unwrap()));
-        assert!(AstSize.cost_fn(&"(;; ?a ?b)".parse().unwrap()) > AstSize.cost_fn(&"?a".parse().unwrap()));
-        assert!(AstSize.cost_fn(&"(? ?b)".parse().unwrap()) > AstSize.cost_fn(&"(?b)".parse().unwrap()));
+        assert!(AstSize.cost_rec(&"(;; ?a ?b)".parse::<egg::RecExpr<RelLanguage>>().unwrap())
+            > AstSize.cost_rec(&"?b".parse::<egg::RecExpr<RelLanguage>>().unwrap()));
+        assert!(AstSize.cost_rec(&"(;; ?a ?b)".parse::<egg::RecExpr<RelLanguage>>().unwrap())
+            > AstSize.cost_rec(&"?a".parse::<egg::RecExpr<RelLanguage>>().unwrap()));
+        assert!(AstSize.cost_rec(&"(? ?b)".parse::<egg::RecExpr<RelLanguage>>().unwrap())
+            > AstSize.cost_rec(&"(?b)".parse::<egg::RecExpr<RelLanguage>>().unwrap()));
     }
 }
