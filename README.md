@@ -1,6 +1,10 @@
-# Installation: 
+# Equality saturation for solving equalities of relational expressions
 
-## Pre-setup Cargo (only for Mac)
+Andrei Kozyrev's Bachelor's Thesis. Thesis could be found [here](https://github.com/K-dizzled/equality-saturation-in-coq-thesis/blob/master/diploma.pdf).
+
+## Building the project: 
+
+### Pre-setup Cargo (only for Mac)
 Add the following to your `~/.cargo/config` (create one if you don't have such file):
 ```console 
 [target.x86_64-apple-darwin]
@@ -16,7 +20,7 @@ rustflags = [
 ]
 ```
 
-## Opam setup: 
+### Opam setup: 
 Configure the opam environment:
 ```console
 opam switch create 4.14.0 
@@ -49,7 +53,7 @@ Build the project:
 dune build
 ```
 
-## To use from outside of the source folder: 
+### To use from outside of the source folder: 
 ```console
 dune build @install
 opam install coq-via-egg-plugin .
@@ -69,7 +73,7 @@ Qed.
 
 **Comments**: Now parametrise relations only with `A : Type` (will very soon be fixed). 
 
-# Usage: 
+## Usage: 
 * `Cegg config <reference>`: Configure the plugin with the given reference to a `Record` object. Allows to configure the ruleset for egg. It takes a user-defined list of rewrite rules and caches it for the later use in Cegg solve and Cegg solve eq.
 
   ```coq
@@ -117,3 +121,15 @@ Qed.
     Cegg solve eq using "search_both".
   Qed.
   ```
+
+## Project Layout: 
+* `src/`: The source code of the plugin.
+* `theories/`: Code in `Coq` that is used for testing the plugin.
+* `src/rust-egg/`: The source code of the rust part of the plugin.
+* `src/rust-egg/src/config.rs`: Resrite system rules and constants.
+* `src/rust-egg/src/goal_preprocess.rs`: Parsing data that have come from OCaml.
+* `src/rust-egg/src/lib.rs`: The entry point of the rust part. Contains functions that are being called using the FFI from OCaml.
+* `src/rust-egg/src/proof_strategy.rs`: Implementation of various proof strategies.
+* `src/rust_api.ml`: FFI function signatures.
+* `src/cegg.mlg`: Vernacular declarations of tactics and commands. 
+* `src/solver.ml`: The entry point of the OCaml part. Contains functions that are being called from `src/cegg.mlg`. 
