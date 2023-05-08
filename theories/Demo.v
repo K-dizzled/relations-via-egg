@@ -6,9 +6,21 @@ Section Example.
 Variable A : Type.
 
 Lemma test_with1 (r : relation A): 
+  ((r ;; r^*)^?)^+ ;; ((r^?)^?)^+ ≡ r^*.
+Proof.
+  Cegg solve eq.
+Qed.
+
+Lemma test_with2 (r : relation A): 
   (r^?)^+ ;; ((r^?)^?)^+ ≡ (r^?)^+ ;; (r^?)^*.
 Proof.
-  Cegg solve eq using "bidi". 
+  Cegg solve eq. 
+Qed.
+
+Lemma test_with3 (r : relation A): 
+  ((r^?)^+ ;; ((r^?)^?)^+)^+ ;; r^+ ≡ r^+.
+Proof.
+  Cegg solve eq.
 Qed.
 
 Variable rf : A -> A -> Prop.

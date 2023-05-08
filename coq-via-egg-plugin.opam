@@ -16,6 +16,8 @@ depends: [
   "ocaml" {>= "4.07.1"}
   "dune" {>= "3.5"}
   "coq" {>= "8.16.0"}
+  "coq-hahn" { >= "1.1" | (= "dev") }
+  "coq-promising-lib" { = "dev" }
 ]
 
 tags: [
