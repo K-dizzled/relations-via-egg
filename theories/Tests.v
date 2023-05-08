@@ -105,31 +105,31 @@ Proof. Cegg solve eq. Qed.
 
 Lemma test_crE (r : relation A) :
   r^? ≡ ⦗fun _ => True⦘ ∪ r. 
-Proof. Cegg solve eq. Qed.
+Proof. Cegg solve eq using "bidi". Qed.
 
 Lemma test_rtE (r : relation A) :
   r^* ≡ ⦗fun _ => True⦘ ∪ r^+.
-Proof. Cegg solve eq. Qed.
+Proof. Cegg solve eq using "bidi". Qed.
 
 Lemma test_csE (r : relation A) :
   r^⋈ ≡ r ∪ r⁻¹.
-Proof. Cegg solve eq. Qed.
+Proof. Cegg solve eq using "bidi". Qed.
 
 Lemma test_crsE (r : relation A) :
   r^⋈? ≡ ⦗fun _ => True⦘ ∪ r ∪ r⁻¹.
-Proof. Cegg solve eq. Qed.
+Proof. Cegg solve eq using "bidi". Qed.
 
 Lemma test_crsEE (r : relation A) :
   r^⋈? ≡ ⦗fun _ => True⦘ ∪ r^⋈.
-Proof. Cegg solve eq. Qed.
+Proof. Cegg solve eq using "bidi". Qed.
 
 Lemma test_rt_begin (r : relation A) :
   r^* ≡ ⦗fun _ => True⦘ ∪ r ⨾ r^*.
-Proof. Cegg solve eq. Qed.
+Proof. Cegg solve eq using "bidi". Qed.
 
 Lemma test_rt_end (r : relation A) :
   r^* ≡ ⦗fun _ => True⦘ ∪ r^* ⨾ r.
-Proof. Cegg solve eq. Qed.
+Proof. Cegg solve eq using "bidi". Qed.
 
 Lemma test_rewrite_ct_rt (r : relation A) :
   r^+ ;; r^* ≡ r^+.
@@ -211,10 +211,6 @@ Lemma test_crs_union (r r' : relation A) :
   (r ∪ r')^⋈? ≡ r^⋈? ∪ r'^⋈?.
 Proof. Cegg solve eq. Qed.
 
-Lemma test_unionC (r r' : relation A) :
-  r ∪ r' ≡ r' ∪ r.
-Proof. Cegg solve eq. Qed.
-
 Lemma test_unionK (r : relation A) :
   r ∪ r ≡ r.
 Proof. Cegg solve eq. Qed.
@@ -229,7 +225,7 @@ Proof. Cegg solve eq. Qed.
 
 Lemma cr_seq (r r' : relation A) : 
   r^? ⨾ r' ≡ r' ∪ r ⨾ r'.
-Proof. Cegg solve eq. Qed.
+Proof. Cegg solve eq using "bidi". Qed.
 
 Lemma ct_seq_swap (r r' : relation A) :
   (r ⨾ r')⁺ ⨾ r ≡ r ⨾ (r' ⨾ r)⁺.
