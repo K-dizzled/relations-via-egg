@@ -8,7 +8,7 @@ val simplify_lhs :
   unit Proofview.tactic
 
 val try_prove : 
-  unit -> 
+  string ->
   unit Proofview.tactic
 
 val config_egg : 

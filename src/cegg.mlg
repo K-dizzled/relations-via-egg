@@ -15,7 +15,11 @@ TACTIC EXTEND cegg_solve
 END
 
 TACTIC EXTEND cegg_solve_eq
-| [ "Cegg" "solve" "eq" ] -> { time_tac "Try show eq" (try_prove ()) }
+| [ "Cegg" "solve" "eq" ] -> { time_tac "Try show eq" (try_prove "search_both") }
+END
+
+TACTIC EXTEND cegg_solve_eq_with_strat
+| [ "Cegg" "solve" "eq" "using" string(s) ] -> { time_tac "Try show eq" (try_prove s) }
 END
 
 TACTIC EXTEND print_type

@@ -29,20 +29,29 @@ macro_rules! rewrite {
 }
 
 pub type RelRules = Vec<Rewrite<RelLanguage, ()>>;
-pub type RuleRepr = Vec<(&'static str, &'static str, &'static str, RuleDir)>;
+pub type RuleRepr = Vec<(&'static str, &'static str, &'static str, RuleDir, Vec<&'static str>)>;
 
 pub struct RewriteRules {
     pub rules: RelRules,
-    pub rules_dict: HashMap<String, Rewrite<RelLanguage, ()>>
+    pub rules_dict: HashMap<String, Rewrite<RelLanguage, ()>>,
+    pub subst_order_dict: HashMap<String, Vec<String>>,
 }
 
 impl RewriteRules {
     pub fn new() -> Self {
-        Self { rules: vec![], rules_dict: HashMap::new() }
+        Self {
+            rules: vec![],
+            rules_dict: HashMap::new(),
+            subst_order_dict: HashMap::new()
+        }
     }
 
     pub fn get_rule_by_name(&self, name: &str) -> Option<&Rewrite<RelLanguage, ()>> {
         self.rules_dict.get(name)
+    }
+
+    pub fn get_subst_order_by_name(&self, name: &str) -> Option<&Vec<String>> {
+        self.subst_order_dict.get(name)
     }
 
     pub fn push(&mut self, rule: Rewrite<RelLanguage, ()>) {
@@ -59,7 +68,11 @@ impl RewriteRules {
 
     pub fn default(from: &RuleRepr) -> Self {
         let mut rules = Self::new();
-        for (name, lhs, rhs, dir) in from.iter() {
+        for (name, lhs, rhs, dir, order) in from.iter() {
+            rules.subst_order_dict.insert(
+                name.to_string(),
+                order.iter().map(|x| x.to_string()).collect()
+            );
             match dir {
                 RuleDir::Forward => {
                     rules.push(rewrite_in_runtime(name, lhs, rhs).unwrap());
@@ -79,7 +92,11 @@ impl RewriteRules {
 
     pub fn all_bidirectional(from: &RuleRepr) -> Self {
         let mut rules = Self::new();
-        for (name, lhs, rhs, _) in from.iter() {
+        for (name, lhs, rhs, _, order) in from.iter() {
+            rules.subst_order_dict.insert(
+                name.to_string(),
+                order.iter().map(|x| x.to_string()).collect()
+            );
             rules.neat_push(rewrite_in_runtime(name, lhs, rhs));
             rules.neat_push(rewrite_in_runtime(&format!("{}-rev", name), rhs, lhs));
         }
@@ -89,7 +106,11 @@ impl RewriteRules {
 
     pub fn all_decreasing(from: &RuleRepr) -> Self {
         let mut rules = Self::new();
-        for (name, lhs, rhs, _) in from.iter() {
+        for (name, lhs, rhs, _, order) in from.iter() {
+            rules.subst_order_dict.insert(
+                name.to_string(),
+                order.iter().map(|x| x.to_string()).collect()
+            );
             let left: RecExpr<RelLanguage> = lhs.parse().unwrap();
             let right: RecExpr<RelLanguage> = rhs.parse().unwrap();
 
@@ -161,13 +182,13 @@ mod tests {
     #[test]
     fn test_cost_fn() {
         let rules: RuleRepr = vec![
-            ("a", "(;; ?a ?b)", "(;; ?b ?a)", RuleDir::Forward),
-            ("b", "(&& ?a ?b)", "(|| ?b ?a)", RuleDir::Backward),
-            ("c", "(? (? ?a))", "(? ?a)", RuleDir::Forward),
-            ("c1", "(* (* ?a))", "(* ?a)", RuleDir::Forward),
-            ("c", "(+ (+ ?a))", "(+ ?a)", RuleDir::Forward),
-            ("union_false_r", "(|| ?r bot)", "?r", RuleDir::Forward),
-            ("union_false_l", "(|| bot ?r)", "?r", RuleDir::Forward),
+            ("a", "(;; ?a ?b)", "(;; ?b ?a)", RuleDir::Forward, vec!["?a", "?b"]),
+            ("b", "(&& ?a ?b)", "(|| ?b ?a)", RuleDir::Backward, vec!["?a", "?b"]),
+            ("c", "(? (? ?a))", "(? ?a)", RuleDir::Forward, vec!["?a"]),
+            ("c1", "(* (* ?a))", "(* ?a)", RuleDir::Forward, vec!["?a"]),
+            ("c", "(+ (+ ?a))", "(+ ?a)", RuleDir::Forward, vec!["?a"]),
+            ("union_false_r", "(|| ?r bot)", "?r", RuleDir::Forward, vec!["?r"]),
+            ("union_false_l", "(|| bot ?r)", "?r", RuleDir::Forward, vec!["?r"]),
         ];
 
         let rules = RewriteRules::all_decreasing(&rules);

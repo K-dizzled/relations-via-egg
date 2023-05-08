@@ -51,7 +51,11 @@ pub struct ProofStrategySearchIntersect {}
 // Build an e-graph for the lhs and search it for the rhs.
 pub struct ProofStrategyAllBidi {}
 
-pub fn debug_graph_pdf(egraph: &EGraph<RelLanguage, ()>, expr_str: &str, debug: bool) {
+pub fn debug_graph_pdf<L>(egraph: &EGraph<L, ()>, expr_str: &str, debug: bool)
+where
+    L: Language,
+    L: std::fmt::Display
+{
     if debug {
         std::fs::create_dir_all("egraphs").unwrap();
         let filename = "egraphs/".to_string() + &expr_str + ".pdf";
@@ -237,10 +241,15 @@ impl ProofStrategy for ProofStrategyAllBidi {
 
         let equivs = runner.egraph.equivs(&expr1, expr2);
         if equivs.is_empty() {
+            debug_msg("No equivs found", debug);
             return Err(ProofError::FailedToProve);
         }
 
         let mut explanation = runner.explain_equivalence(&expr1, &expr2);
+        debug_msg(
+            format!("Explanation: {}", explanation.get_string()).as_str(),
+            debug,
+        );
         let proof = parse_proof(&mut explanation, &rules);
 
         Ok(ProofSeq::from(proof))

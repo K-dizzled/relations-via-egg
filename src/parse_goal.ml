@@ -84,4 +84,4 @@ let rule_to_string rule =
     | Forward -> "->"
     | Backward -> "<-"
   in
-  "(rewrite " ^ dir ^ " " ^ rule.theorem ^ " with " ^ substs ^ " at " ^ (string_of_int rule.rewrite_at) ^ ")"
+  "(rewrite " ^ dir ^ " (" ^ rule.theorem ^ " (" ^ substs ^ ")) at " ^ (string_of_int rule.rewrite_at) ^ ")"

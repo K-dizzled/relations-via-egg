@@ -41,7 +41,10 @@ let rewrite (thr : string) (dir : Parse_goal.direction) =
 let rewrite_with (thr : string) (dir : Parse_goal.direction) (with_constrs : Constr.t array) (at_occ : int) =
   let constr = get_thr_constr thr in
   let first_arg_constr = Constr.mkVar (Names.Id.of_string "A") in 
-  let constr = Constr.mkApp (constr, (Array.append [|first_arg_constr|] with_constrs)) in
+  let constr = 
+    if Array.length with_constrs = 0 then 
+      constr 
+    else Constr.mkApp (constr, (Array.append [|first_arg_constr|] with_constrs)) in
 
   let l2r = match dir with
     | Parse_goal.Forward -> true

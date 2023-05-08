@@ -38,7 +38,9 @@ pub fn rust_prove_eq(
     expr1: GoalSExpr,
     expr2: GoalSExpr,
     debug: bool,
+    strategy_name: &str,
 ) -> Result<ProofSeq, ocaml::Error> {
+    println!("Solving using strategy: {}", strategy_name);
     let rl1 = expr_to_rellang(&expr1);
     let rl2 = expr_to_rellang(&expr2);
 
@@ -48,7 +50,11 @@ pub fn rust_prove_eq(
     }
     let rl1 = rl1.unwrap(); let rl2 = rl2.unwrap();
 
-    let proof_strategy = ProofStrategySearchBoth {};
+    let proof_strategy: &dyn ProofStrategy = match strategy_name {
+        "intersect" => &ProofStrategySearchIntersect {},
+        "bidi" => &ProofStrategyAllBidi {},
+        _ => &ProofStrategySearchBoth {},
+    };
     let proof = proof_strategy.prove_eq(&rl1, &rl2, &RULES, debug);
     if let Err(error) = proof {
         let message = error.into();

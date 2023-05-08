@@ -56,6 +56,7 @@ where
     L: egg::FromOp,
 {
     let mut e_graph_copy = egraph.clone();
+    let from = e_graph_copy.id_to_expr(current_id);
 
     rewrite.applier.apply_one(
         &mut e_graph_copy,
@@ -66,14 +67,13 @@ where
         ),
         rewrite.name.clone(),
     );
+    e_graph_copy.rebuild();
 
-    if let Some(id) = e_graph_copy.lookup_expr(&next) {
-        if id == current_id {
-            return true;
-        }
-    }
-
-    false
+    return if !e_graph_copy.equivs(&from, &next).is_empty() {
+        true
+    } else {
+        false
+    };
 }
 
 // Takes two flat terms and a rewrite that
@@ -156,6 +156,31 @@ where
     None
 }
 
+fn sort_substs(substs: &mut LinkedList<(String, GoalSExpr)>, order: &Vec<String>) {
+    let mut elems = LinkedList::new();
+    std::mem::swap(substs, &mut elems);
+    let mut vec: Vec<_> = elems.into_iter().collect();
+    let pos_comp = |a: &(String, GoalSExpr), b: &(String, GoalSExpr)| {
+        let a_pos = order.iter().position(|x| x == &a.0).unwrap();
+        let b_pos = order.iter().position(|x| x == &b.0).unwrap();
+        a_pos.cmp(&b_pos)
+    };
+    vec.sort_by(|a, b| pos_comp(a, b));
+    substs.extend(vec.into_iter());
+
+    // TODO: remove this
+    let mut needs_clear = false;
+    for (_, s) in substs.iter() {
+        if *s == GoalSExpr::Symbol("bot".to_string()) || *s == GoalSExpr::Symbol("top".to_string()) {
+            needs_clear = true;
+        }
+    }
+
+    if needs_clear {
+        substs.clear();
+    }
+}
+
 pub fn parse_proof(expl: &mut Explanation<RelLanguage>, r_rules: &RewriteRules) -> LinkedList<Rule> {
     let flat_expl = expl.make_flat_explanation();
     return if let Some(mut prev) = flat_expl.first() {
@@ -196,12 +221,15 @@ pub fn ft_to_rule(
         let rule_name = (*rule_name).to_string();
         if rule_name.ends_with("-rev") {
             let rule_name_wo_dir = rule_name.split("-rev").next().unwrap();
-            let rewrite_with = get_pattern_subst(
+            let mut rewrite_with = get_pattern_subst(
                 rewrite_from,
                 rewrite_to,
                 rewrite_sys.get_rule_by_name(rule_name_wo_dir).unwrap(),
                 direction.neg()
             ).unwrap().iter().map(|(n, x)| (n.clone(), recexpr_to_goal_expr(x).unwrap())).collect();
+            if let Some(order) = rewrite_sys.get_subst_order_by_name(rule_name_wo_dir) {
+                sort_substs(&mut rewrite_with, order);
+            }
             return Some(Rule {
                 direction: direction.neg(),
                 theorem: rule_name_wo_dir.to_string(),
@@ -210,11 +238,14 @@ pub fn ft_to_rule(
             });
         }
 
-        let rewrite_with = get_pattern_subst(
+        let mut rewrite_with = get_pattern_subst(
             rewrite_from, rewrite_to,
             rewrite_sys.get_rule_by_name(rule_name.as_str()).unwrap(),
             direction.clone()
         ).unwrap().iter().map(|(n, x)| (n.clone(), recexpr_to_goal_expr(x).unwrap())).collect();
+        if let Some(order) = rewrite_sys.get_subst_order_by_name(rule_name.as_str()) {
+            sort_substs(&mut rewrite_with, order);
+        }
         return Some(Rule {
             direction,
             theorem: (*rule_name).to_string(),
@@ -257,7 +288,7 @@ mod tests {
             "(;; (+ (? r)) (+ (? r)))",
             "(;; (+ (? r)) (+ (? r)))",
             "(+ (? (? r)))",
-            "(+ (? (? r)))",
+            "(;; (+ (? r)) (+ (? (? (? r)))))"
         ];
 
         let rhss: Vec<&str> = vec![
@@ -266,7 +297,7 @@ mod tests {
             "(;; (* r) (+ (? r)))",
             "(;; (+ (? r)) (* r))",
             "(+ (? (? (? r))))",
-            "(+ (? (? (? r))))"
+            "(;; (+ (? r)) (+ (? (? r))))"
         ];
 
         let rewrites: Vec<Rewrite<RelLanguage, ()>> = vec![
@@ -278,20 +309,24 @@ mod tests {
             rewrite!("cr_of_cr"; "(? (? ?r))" => "(? ?r)"),
         ];
 
-        let answers = vec![
-            Some(LinkedList::from([("?r".to_string(), "(? r)".to_string())])),
-            Some(LinkedList::from([("?r".to_string(), "r".to_string())])),
-            Some(LinkedList::from([("?r".to_string(), "r".to_string())])),
-            Some(LinkedList::from([("?r".to_string(), "r".to_string())])),
-            None,
-            Some(LinkedList::from([("?r".to_string(), "r".to_string())])),
+        let answers: Vec<Option<LinkedList<(String, RecExpr<RelLanguage>)>>> = vec![
+            Some(LinkedList::from([("?r".to_string(), "(? r)".parse().unwrap())])),
+            Some(LinkedList::from([("?r".to_string(), "r".parse().unwrap())])),
+            Some(LinkedList::from([("?r".to_string(), "r".parse().unwrap())])),
+            Some(LinkedList::from([("?r".to_string(), "r".parse().unwrap())])),
+            Some(LinkedList::from([("?r".to_string(), "r".parse().unwrap())])),
+            Some(LinkedList::from([("?r".to_string(), "r".parse().unwrap())])),
         ];
 
-        let is_forward = vec![true, true, true, true, true, false];
-
-        // (+ (? (Rewrite<= cr_of_cr (? (? r)))))
-        // (Rewrite=> ct_of_cr (* (? (? r))))
-        // (* (Rewrite=> cr_of_cr (? r)))
+        let is_forward = vec![
+            Direction::Forward,
+            Direction::Forward,
+            Direction::Forward,
+            Direction::Forward,
+            Direction::Forward,
+            Direction::Backward,
+            Direction::Forward,
+        ];
 
         for (lhs, rhs, rewrite, answer, is_fwd) in izip!(lhss, rhss, rewrites, answers, is_forward) {
             let mut left: RecExpr<RelLanguage> = lhs.parse().unwrap();

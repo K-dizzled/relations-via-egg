@@ -2,9 +2,9 @@ open Rust_api
 open Pp
 
 module Control = struct
-  let debug = true
-  let debug_feedback = true
-  let debug_egraphs = true
+  let debug = false
+  let debug_feedback = false
+  let debug_egraphs = false
   let time = true
 end
 
@@ -81,12 +81,12 @@ let simplify_lhs () =
     tac
   )
 
-let try_prove () = 
+let try_prove strat_name = 
   Proofview.Goal.enter (fun goal -> 
       let lhs, rhs = extract_goal_eq_sides goal in
       let proof_seq = 
         try 
-          Rust.prove_eq lhs rhs Control.debug_egraphs
+          Rust.prove_eq lhs rhs Control.debug_egraphs strat_name
         with err -> 
           CErrors.user_err (str "Unable to prove equivalence.") in
 
