@@ -8,6 +8,7 @@ val access_record_body :
 
 val sexp_to_constr : 
   goal_s_expr -> 
+  Constr.t -> 
   Constr.t
 
 val unpack_prod : 

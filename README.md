@@ -71,8 +71,6 @@ Proof.
 Qed.
 ```
 
-**Comments**: Now parametrise relations only with `A : Type` (will very soon be fixed). 
-
 ## Usage: 
 * `Cegg config <reference>`: Configure the plugin with the given reference to a `Record` object. Allows to configure the ruleset for egg. It takes a user-defined list of rewrite rules and caches it for the later use in Cegg solve and Cegg solve eq.
 

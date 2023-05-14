@@ -24,7 +24,7 @@ val goal_to_sexp :
   env -> 
   EConstr.t -> 
   evar_map -> 
-  goal_s_expr
+  goal_s_expr * (EConstr.t option)
 
 val split_goal : 
   goal_s_expr -> 

@@ -14,4 +14,5 @@ val rewrite_with :
   Parse_goal.direction -> 
   Constr.t array -> 
   int -> 
+  Constr.t -> 
   unit Proofview.tactic

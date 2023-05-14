@@ -19,30 +19,42 @@ type rule =
 
 type proof_seq = { seq : rule list; } [@@boxed]
 
-(* Parse goal represented as a Ecostr to
-   an s expression. Assumes that the term 
-   contains only Applications and Variables *)
-let rec goal_to_sexp env trm sigma = 
+let rec goal_to_sexp_aux env trm sigma (type_param : EConstr.t option) : (goal_s_expr * EConstr.t option) =
   match EConstr.kind sigma trm with
   | App (f, args) -> 
     let f_name = term_to_str env f sigma in
     (* The first element of the list is a
     type parameter and for now I just drop it *)
-    let args = Array.sub args 1 (Array.length args - 1) in
-    let args_repr = 
-      Array.to_list args
-      |> List.map (fun arg -> goal_to_sexp env arg sigma)
+    let extracted_type = args.(0) in
+    let type_param : EConstr.t option = 
+      match type_param with
+      | None -> Some extracted_type
+      | Some costr_type ->
+        if EConstr.eq_constr sigma costr_type extracted_type then
+          Some costr_type
+        else
+          raise (Goal_parse_exp "Something went wrong in type parameter extraction. Report an issue.") 
     in
-    Application (f_name, args_repr)
-  | Var n -> Symbol (Names.Id.to_string n)
+    let args : EConstr.t array = Array.sub args 1 (Array.length args - 1) in
+    let args_repr : (EConstr.t list) = Array.to_list args in
+    let args_repr : (goal_s_expr list) = 
+      List.map (fun arg -> fst (goal_to_sexp_aux env arg sigma type_param)) args_repr in 
+    (Application (f_name, args_repr), type_param)
+  | Var n -> (Symbol (Names.Id.to_string n), type_param)
   | Ind ((name, _), _) -> 
     let name_s = Names.MutInd.to_string name in
-    Symbol name_s
+    (Symbol name_s, type_param)
   | Lambda (_, t, body) -> 
-    let t_name = goal_to_sexp env t sigma in
-    let body_repr = goal_to_sexp env body sigma in
-    Lambda (t_name, body_repr)
+    let t_name = fst (goal_to_sexp_aux env t sigma type_param) in
+    let body_repr = fst (goal_to_sexp_aux env body sigma type_param) in
+    (Lambda (t_name, body_repr), type_param)
   | _ -> raise (Goal_parse_exp "Conclusion of the goal must be an application.") 
+
+(* Parse goal represented as a Ecostr to
+   an s expression. Assumes that the term 
+   contains only Applications and Variables *)
+let goal_to_sexp env trm sigma = 
+  goal_to_sexp_aux env trm sigma (None)
 
 (* Split the statement into a pair of lhs and rhs,
    throw Goal_parse_exp if the amount of 
